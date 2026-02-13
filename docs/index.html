@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Timelapse Analyzer Suite</title>
+    <meta
+      name="description"
+      content="Turn commit and agent-session history into actionable repo, file, symbol, and session intelligence."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">AGIcorp-ai / timelapse</p>
+        <h1>Development Intelligence, Not Just Git Stats</h1>
+        <p class="lede">
+          Timelapse analyzes commits and agent sessions at four zoom levels: repo, file,
+          symbol, and session attribution. It emits markdown for humans and JSON/CSV for
+          models.
+        </p>
+        <div class="cta-row">
+          <a class="button primary" href="https://github.com/AGIcorp-ai/timelapse">View Source</a>
+          <a class="button" href="#quickstart">Quickstart</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel metrics" aria-labelledby="metrics-title">
+        <h2 id="metrics-title">What You Can Measure</h2>
+        <div class="metric-grid">
+          <article>
+            <p class="metric-label">Repo Throughput</p>
+            <p class="metric-value">Commits/day</p>
+            <p class="metric-note">Velocity over sliding windows with prompt mix context.</p>
+          </article>
+          <article>
+            <p class="metric-label">File Hotspots</p>
+            <p class="metric-value">Co-change coupling</p>
+            <p class="metric-note">Pinpoint files that should be reviewed together.</p>
+          </article>
+          <article>
+            <p class="metric-label">Symbol Churn</p>
+            <p class="metric-value">Function touch stream</p>
+            <p class="metric-note">Trace unstable functions, not just unstable files.</p>
+          </article>
+          <article>
+            <p class="metric-label">Session Attribution</p>
+            <p class="metric-value">Prompt -> commit lag</p>
+            <p class="metric-note">Measure delivery responsiveness by coding session.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="quickstart" aria-labelledby="quickstart-title">
+        <h2 id="quickstart-title">Quickstart</h2>
+        <div class="code-tabs" role="tablist" aria-label="Commands">
+          <button class="tab active" data-target="repo">Repo</button>
+          <button class="tab" data-target="file">File</button>
+          <button class="tab" data-target="symbols">Symbols</button>
+          <button class="tab" data-target="session">Session</button>
+        </div>
+        <pre class="code active" data-panel="repo"><code>python analyze_repo.py --days 30
+# outputs: reports/repo/last_30_days.{md,json,csv}</code></pre>
+        <pre class="code" data-panel="file"><code>python analyze_file.py --repo 4D-bot --file arena_v0/cli.py --days 30
+# outputs: reports/files/4D-bot__arena_v0__cli.py.{md,json,csv}</code></pre>
+        <pre class="code" data-panel="symbols"><code>python analyze_symbols.py --repo 4D-bot --file arena_v0/cli.py --days 30
+# outputs: reports/symbols/4D-bot__arena_v0__cli.py.{md,json,csv}</code></pre>
+        <pre class="code" data-panel="session"><code>python analyze_session.py --repo 4D-bot --session-id &lt;SESSION_ID&gt;
+# outputs: reports/sessions/4D-bot__&lt;SESSION_ID&gt;.{md,json,csv}</code></pre>
+      </section>
+
+      <section class="panel" aria-labelledby="pipeline-title">
+        <h2 id="pipeline-title">Pipeline: From Raw Logs to Decisions</h2>
+        <ol class="steps">
+          <li>
+            <h3>1. Run Repo Analyzer</h3>
+            <p>Find top churn files and macro throughput trends.</p>
+          </li>
+          <li>
+            <h3>2. Drill Into Hot Files</h3>
+            <p>Use coupling + velocity to plan safer change sets.</p>
+          </li>
+          <li>
+            <h3>3. Inspect Symbol Churn</h3>
+            <p>Target unstable functions/classes for tests and refactors.</p>
+          </li>
+          <li>
+            <h3>4. Attribute by Session</h3>
+            <p>Relate prompts to commits and evaluate execution quality.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="panel" aria-labelledby="schema-title">
+        <h2 id="schema-title">ML-Ready JSON Contract</h2>
+        <p>
+          Every analyzer includes provenance fields (`schema_version`, `collector_version`,
+          `generated_at`, `source_system`, `quality_flags`) plus flat record arrays for
+          direct ingestion.
+        </p>
+        <pre class="json"><code>{
+  "schema_version": "v0.1",
+  "collector_version": "timelapse-analyzers/0.1",
+  "source_system": "git+claude+codex",
+  "commits": [{ "sha": "...", "repo": "4D-bot", "files": ["arena_v0/cli.py"] }]
+}</code></pre>
+      </section>
+
+      <section class="panel" aria-labelledby="use-cases-title">
+        <h2 id="use-cases-title">What Teams Use It For</h2>
+        <div class="cards">
+          <article class="card">
+            <h3>Release Risk Forecasting</h3>
+            <p>Use churn velocity + coupling to identify high-risk change surfaces before release cut.</p>
+          </article>
+          <article class="card">
+            <h3>Refactor Prioritization</h3>
+            <p>Rank unstable symbols by touch frequency and mean retouch interval.</p>
+          </article>
+          <article class="card">
+            <h3>Agent Workflow Evaluation</h3>
+            <p>Track prompt-to-commit lag and commits-per-prompt to tune workflow quality.</p>
+          </article>
+          <article class="card">
+            <h3>Training Data Curation</h3>
+            <p>Export flat JSON/CSV records for churn prediction, coupling models, and quality analytics.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built for legible engineering analytics. Source:
+        <a href="https://github.com/AGIcorp-ai/timelapse">AGIcorp-ai/timelapse</a>
+      </p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

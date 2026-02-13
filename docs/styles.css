@@ -1,0 +1,258 @@
+:root {
+  --bg: #f3efe5;
+  --ink: #1f2a32;
+  --muted: #5a646b;
+  --panel: #fffdf8;
+  --line: #d8d0c2;
+  --accent: #0d7a66;
+  --accent-2: #cb5a2b;
+  --shadow: 0 8px 30px rgba(31, 42, 50, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 15%, #fff8eb 0%, transparent 35%),
+    radial-gradient(circle at 80% 10%, #e3f4ef 0%, transparent 30%),
+    var(--bg);
+  line-height: 1.45;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(13, 122, 102, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(13, 122, 102, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  transform: perspective(500px) rotateX(38deg) scale(1.3);
+  transform-origin: center top;
+  opacity: 0.25;
+}
+
+.hero-inner {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 88px 20px 64px;
+}
+
+.eyebrow {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-2);
+  font-size: 0.82rem;
+  margin: 0 0 10px;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  line-height: 1.04;
+  margin: 0;
+  max-width: 860px;
+}
+
+.lede {
+  font-size: clamp(1rem, 2vw, 1.24rem);
+  color: var(--muted);
+  max-width: 760px;
+  margin: 18px 0 0;
+}
+
+.cta-row {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button {
+  border: 1px solid var(--line);
+  padding: 11px 16px;
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  background: var(--panel);
+  font-weight: 700;
+}
+
+.button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #f4fff8;
+}
+
+main {
+  max-width: 980px;
+  margin: 22px auto 56px;
+  padding: 0 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric-grid article {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  margin: 8px 0 4px;
+  font-size: 1.22rem;
+  font-weight: 700;
+}
+
+.metric-note {
+  margin: 0;
+  color: var(--muted);
+}
+
+.code-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.tab {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--accent-2);
+  color: #fff;
+  border-color: var(--accent-2);
+}
+
+pre {
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: #162027;
+  color: #e8f1f7;
+  overflow-x: auto;
+}
+
+.code {
+  display: none;
+}
+
+.code.active {
+  display: block;
+}
+
+pre code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.92rem;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.steps li + li {
+  margin-top: 14px;
+}
+
+.steps h3 {
+  margin: 0 0 4px;
+  font-size: 1.02rem;
+}
+
+.steps p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+footer {
+  padding: 24px 20px 50px;
+  text-align: center;
+  color: var(--muted);
+}
+
+footer a {
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .hero-inner {
+    padding-top: 64px;
+  }
+
+  .metric-grid,
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
