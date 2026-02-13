@@ -1,0 +1,33 @@
+# Python cache/bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual envs
+.venv/
+venv/
+.env
+
+# Test/cache artifacts
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# Generated analysis outputs
+reports/repo/*.md
+reports/repo/*.json
+reports/repo/*.csv
+reports/files/
+reports/symbols/
+reports/sessions/
+reports/last_month_review_smoke.md
+
+# Generated timeline/transcript outputs
+timeline.md
+transcripts/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
