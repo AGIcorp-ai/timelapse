@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .config import CLAUDE_SESSION_DIRS, CODEX_SESSION_DIR, REPOS
+from .config import CLAUDE_SESSION_DIRS, CODEX_SESSION_DIRS, EXTRA_CLAUDE_SESSION_DIRS, REPO_PATH_HINTS, REPOS
 
 STRIP_TAGS = [
     "system-reminder",
@@ -200,20 +200,83 @@ def load_claude_prompts(repo_name: str, session_dir: Path, start: datetime, end:
 
 
 def _detect_repo_from_cwd(cwd: str) -> str | None:
-    for name, repo_path in REPOS.items():
-        if str(repo_path) in cwd:
+    cwd_norm = cwd.strip()
+    for name, paths in REPO_PATH_HINTS.items():
+        for repo_path in paths:
+            if str(repo_path) in cwd_norm:
+                return name
+    # Fallback by terminal directory name when absolute aliases are unknown.
+    for name in REPOS:
+        if f"/{name}" in cwd_norm:
             return name
     return None
 
 
 def load_codex_prompts(start: datetime, end: datetime) -> list[Prompt]:
     prompts: list[Prompt] = []
-    if not CODEX_SESSION_DIR.exists():
+    roots = [p for p in CODEX_SESSION_DIRS if p.exists()]
+    if not roots:
         return prompts
 
-    for path in sorted(CODEX_SESSION_DIR.glob("**/*.jsonl")):
-        session_id = path.stem
-        repo_name: str | None = None
+    for root in roots:
+        for path in sorted(root.glob("**/*.jsonl")):
+            session_id = path.stem
+            repo_name: str | None = None
+
+            with path.open() as fh:
+                for line in fh:
+                    try:
+                        data = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+
+                    msg_type = data.get("type")
+                    if msg_type == "session_meta":
+                        cwd = data.get("payload", {}).get("cwd", "")
+                        repo_name = _detect_repo_from_cwd(str(cwd))
+                        continue
+
+                    if msg_type != "response_item":
+                        continue
+
+                    payload = data.get("payload", {})
+                    if payload.get("role") != "user":
+                        continue
+
+                    ts_raw = data.get("timestamp")
+                    if not ts_raw or repo_name is None:
+                        continue
+                    ts = parse_ts(ts_raw)
+                    if ts < start or ts > end:
+                        continue
+
+                    text = clean_text(_extract_text(payload.get("content", [])))
+                    if not text:
+                        continue
+                    prompts.append(
+                        Prompt(
+                            repo=repo_name,
+                            ts=ts,
+                            source="codex",
+                            text=text[:300],
+                            session_id=session_id,
+                        )
+                    )
+
+    return prompts
+
+
+def _load_claude_session_events(repo_name: str, session_id: str) -> list[SessionEvent]:
+    events: list[SessionEvent] = []
+    base = CLAUDE_SESSION_DIRS.get(repo_name)
+    dirs = ([base] if base else []) + EXTRA_CLAUDE_SESSION_DIRS.get(repo_name, [])
+    if not dirs:
+        return events
+
+    for session_dir in dirs:
+        path = session_dir / f"{session_id}.jsonl"
+        if not path.exists():
+            continue
 
         with path.open() as fh:
             for line in fh:
@@ -223,94 +286,43 @@ def load_codex_prompts(start: datetime, end: datetime) -> list[Prompt]:
                     continue
 
                 msg_type = data.get("type")
-                if msg_type == "session_meta":
-                    cwd = data.get("payload", {}).get("cwd", "")
-                    repo_name = _detect_repo_from_cwd(str(cwd))
+                if msg_type not in {"user", "assistant"}:
                     continue
-
-                if msg_type != "response_item":
-                    continue
-
-                payload = data.get("payload", {})
-                if payload.get("role") != "user":
-                    continue
-
                 ts_raw = data.get("timestamp")
-                if not ts_raw or repo_name is None:
+                if not ts_raw:
                     continue
                 ts = parse_ts(ts_raw)
-                if ts < start or ts > end:
-                    continue
 
-                text = clean_text(_extract_text(payload.get("content", [])))
+                if msg_type == "user":
+                    content = data.get("message", {}).get("content", "")
+                    text = clean_text(_extract_text(content))
+                    role = "user"
+                else:
+                    content = data.get("message", {}).get("content", [])
+                    text = clean_text(_extract_text(content))
+                    role = "assistant"
+
                 if not text:
                     continue
-                prompts.append(
-                    Prompt(
+                events.append(
+                    SessionEvent(
                         repo=repo_name,
-                        ts=ts,
-                        source="codex",
-                        text=text[:300],
                         session_id=session_id,
+                        ts=ts,
+                        role=role,
+                        text=text,
+                        source="claude",
                     )
                 )
-
-    return prompts
-
-
-def _load_claude_session_events(repo_name: str, session_id: str) -> list[SessionEvent]:
-    events: list[SessionEvent] = []
-    session_dir = CLAUDE_SESSION_DIRS.get(repo_name)
-    if session_dir is None:
-        return events
-    path = session_dir / f"{session_id}.jsonl"
-    if not path.exists():
-        return events
-
-    with path.open() as fh:
-        for line in fh:
-            try:
-                data = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-
-            msg_type = data.get("type")
-            if msg_type not in {"user", "assistant"}:
-                continue
-            ts_raw = data.get("timestamp")
-            if not ts_raw:
-                continue
-            ts = parse_ts(ts_raw)
-
-            if msg_type == "user":
-                content = data.get("message", {}).get("content", "")
-                text = clean_text(_extract_text(content))
-                role = "user"
-            else:
-                content = data.get("message", {}).get("content", [])
-                text = clean_text(_extract_text(content))
-                role = "assistant"
-
-            if not text:
-                continue
-            events.append(
-                SessionEvent(
-                    repo=repo_name,
-                    session_id=session_id,
-                    ts=ts,
-                    role=role,
-                    text=text,
-                    source="claude",
-                )
-            )
     return events
 
 
 def _find_codex_session_file(session_id: str) -> Path | None:
-    if not CODEX_SESSION_DIR.exists():
-        return None
-    for path in CODEX_SESSION_DIR.glob(f"**/{session_id}.jsonl"):
-        return path
+    for root in CODEX_SESSION_DIRS:
+        if not root.exists():
+            continue
+        for path in root.glob(f"**/{session_id}.jsonl"):
+            return path
     return None
 
 

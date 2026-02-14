@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Primary Objective Timeline</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial; margin: 24px; color: #111; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    svg { width: 100%; max-width: 960px; height: auto; }
+    code { background: #f4f4f4; padding: 1px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Primary Objective Timeline</h1>
+  <div class="card">
+    <h2>Confidence Over Time</h2>
+    <svg viewBox="0 0 960 280" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="960" height="280" fill="#fff" stroke="#ddd"/>
+      <line x1="40" y1="240" x2="920" y2="240" stroke="#999"/>
+      <line x1="40" y1="40" x2="40" y2="240" stroke="#999"/>
+      <polyline fill="none" stroke="#0f766e" stroke-width="3" points="40.0,60.0 128.0,240.0 216.0,68.0 304.0,56.0 392.0,68.0 480.0,56.0 568.0,68.0 656.0,62.0 744.0,68.0 832.0,54.0 920.0,66.0" />
+      <circle cx="40.0" cy="60.0" r="4" fill="#0f766e" /><circle cx="128.0" cy="240.0" r="4" fill="#0f766e" /><circle cx="216.0" cy="68.0" r="4" fill="#0f766e" /><circle cx="304.0" cy="56.0" r="4" fill="#0f766e" /><circle cx="392.0" cy="68.0" r="4" fill="#0f766e" /><circle cx="480.0" cy="56.0" r="4" fill="#0f766e" /><circle cx="568.0" cy="68.0" r="4" fill="#0f766e" /><circle cx="656.0" cy="62.0" r="4" fill="#0f766e" /><circle cx="744.0" cy="68.0" r="4" fill="#0f766e" /><circle cx="832.0" cy="54.0" r="4" fill="#0f766e" /><circle cx="920.0" cy="66.0" r="4" fill="#0f766e" />
+    </svg>
+  </div>
+  <div class="card">
+    <h2>Chronological List</h2>
+    <ol>
+      <li><strong>2026-01-11 -> 2026-01-14</strong> — <code>Primary user objective:</code> Develop a generative ASCII graphics/gaming engine and pipeline, starting with creating a 3D ASCII "candle" asset (and an observer/memory-palace integration) by converting candle models/images to 3D ASCII via an STL-to-ASCII workflow and integrating it into the canvas UI.</li><li><strong>2026-01-14 -> 2026-01-17</strong> — <code>Primary user objective:</code> Develop and document an agentic interface and experimental world-generation harness in the canvas project (update AGENTS.md and related canvas code) so agents can be seeded to grow and evaluate interface complexity.</li><li><strong>2026-01-17 -> 2026-01-20</strong> — <code>Primary user objective:</code> Iteratively develop and harden the SICM project’s agent and Canvas systems by adding WorldSeed simulation fixtures, invariant checks, rendering/asset pipeline pieces, and documentation (AGENTS.md) to support agentic animations and testing.</li><li><strong>2026-01-20 -> 2026-01-23</strong> — <code>Primary user objective:</code> Get the dspy.RLM feature integrated and running in the canvas project—fix runtime errors, document the changes (README/CLAUDE/AGENTS), and run a demo to drive world/entity generation and measurement.</li><li><strong>2026-01-23 -> 2026-01-26</strong> — <code>Primary user objective:</code> Develop and integrate a recursive, self‑improving ASCII animation engine in the SICM repo—implement genesis modules and CLI, connect the dspy RLM backend, build a 2D→3D (and time/4D) projection pipeline, and compile/share the resulting animations (GIFs).</li><li><strong>2026-01-26 -> 2026-01-29</strong> — <code>Primary user objective:</code> Produce cleaned repo artifacts that generate ASCII animations (and GIFs) of the project's entities—starting from the amoeba/amoeba-ascii blueprint—and apply that blueprint across other entities so you can visually verify the results.</li><li><strong>2026-01-29 -> 2026-02-01</strong> — <code>Primary user objective:</code> Replace the slow NumPy-only Render KAN with a full three-layer KAN implemented in PyTorch, enable GPU training and real-time progress/output (fix train scripts), and produce faster, more compelling ASCII-frame animations.</li><li><strong>2026-02-01 -> 2026-02-04</strong> — <code>Primary user objective:</code> Implement and iterate an LLM-driven freeform ASCII animation generator that creates and tests multi-entity (>=10) chaotic ASCII GIFs and integrate it into the repo.</li><li><strong>2026-02-04 -> 2026-02-07</strong> — <code>Primary user objective:</code> Implement and launch an ASCII-based onboarding/gameplay engine (canvas/src/canvases/onboarding.tsx) as a paid product, including the necessary agent/arena infrastructure.</li><li><strong>2026-02-07 -> 2026-02-10</strong> — <code>Primary user objective:</code> Build, integrate, and deploy a DAW-like ASCII animation web UI—implement the UI, commit changes, harden runtime, and expose it (e.g., via a Tailscale funnel) so it can be shown to coworkers.</li><li><strong>2026-02-10 -> 2026-02-13</strong> — <code>Primary user objective:</code> Complete and prepare the Arena v0 platform for initial rollout by finishing remaining engine gaps (wire up the adapter pipeline, add eval harnesses and auction dashboard), finalize agent handoff, and commit/push changes so the product can be delivered to the first customer.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>Markdown Source</h2>
+    <pre># Primary Objective Timeline
+
+Range: last 34 days | window=3d | step=3d
+
+## Chronological Objectives
+
+1. 2026-01-11T01:05:32.727000Z -> 2026-01-14T01:05:32.727000Z
+   Primary user objective: Develop a generative ASCII graphics/gaming engine and pipeline, starting with creating a 3D ASCII "candle" asset (and an observer/memory-palace integration) by converting candle models/images to 3D ASCII via an STL-to-ASCII workflow and integrating it into the canvas UI.
+   Confidence: 0.9
+   Execution gap: The session contained many short, context-light prompts and lacked explicit success criteria and concrete acceptance conditions, so work wasn’t always tied to precise deliverables or verifiable outcomes.
+2. 2026-01-14T01:05:32.727000Z -> 2026-01-17T01:05:32.727000Z
+   Primary user objective: Develop and document an agentic interface and experimental world-generation harness in the canvas project (update AGENTS.md and related canvas code) so agents can be seeded to grow and evaluate interface complexity.
+   Confidence: 0.0
+   Execution gap: Many prompts were short or vague and lacked explicit targets and success criteria, causing iterative clarification rather than direct, commit-ready instructions.
+3. 2026-01-17T01:05:32.727000Z -> 2026-01-20T01:05:32.727000Z
+   Primary user objective: Iteratively develop and harden the SICM project’s agent and Canvas systems by adding WorldSeed simulation fixtures, invariant checks, rendering/asset pipeline pieces, and documentation (AGENTS.md) to support agentic animations and testing.
+   Confidence: 0.86
+   Execution gap: Many prompts were short and underspecified—lacking explicit targets and success criteria—so work proceeded as exploratory small commits rather than tightly scoped, verifiable tasks.
+4. 2026-01-20T01:05:32.727000Z -> 2026-01-23T01:05:32.727000Z
+   Primary user objective: Get the dspy.RLM feature integrated and running in the canvas project—fix runtime errors, document the changes (README/CLAUDE/AGENTS), and run a demo to drive world/entity generation and measurement.
+   Confidence: 0.92
+   Execution gap: The agent often produced session summaries and repeated reminders instead of a concise prioritized checklist and concrete debugging/run steps to directly resolve the RLM failures and produce a demonstrable run.
+5. 2026-01-23T01:05:32.727000Z -> 2026-01-26T01:05:32.727000Z
+   Primary user objective: Develop and integrate a recursive, self‑improving ASCII animation engine in the SICM repo—implement genesis modules and CLI, connect the dspy RLM backend, build a 2D→3D (and time/4D) projection pipeline, and compile/share the resulting animations (GIFs).
+   Confidence: 0.86
+   Execution gap: Prompts were often short and underspecified (many 'short_without_context' and 'no_success_criteria_multi_turn' flags), so work progressed via iterative, loosely guided commits rather than from a single precise success‑criteria driven plan.
+6. 2026-01-26T01:05:32.727000Z -> 2026-01-29T01:05:32.727000Z
+   Primary user objective: Produce cleaned repo artifacts that generate ASCII animations (and GIFs) of the project's entities—starting from the amoeba/amoeba-ascii blueprint—and apply that blueprint across other entities so you can visually verify the results.
+   Confidence: 0.92
+   Execution gap: The requests clearly demand ASCII animations/GIFs and repository cleanup, but no commits or concrete deliverables were produced in this window and the user did not define precise targets, formats, or acceptance criteria for the animations.
+7. 2026-01-29T01:05:32.727000Z -> 2026-02-01T01:05:32.727000Z
+   Primary user objective: Replace the slow NumPy-only Render KAN with a full three-layer KAN implemented in PyTorch, enable GPU training and real-time progress/output (fix train scripts), and produce faster, more compelling ASCII-frame animations.
+   Confidence: 0.86
+   Execution gap: The agent frequently used short/underspecified prompts without explicit success criteria or clear progress metrics, causing ambiguity about what 'fixed' or 'complete' training looks like.
+8. 2026-02-01T01:05:32.727000Z -> 2026-02-04T01:05:32.727000Z
+   Primary user objective: Implement and iterate an LLM-driven freeform ASCII animation generator that creates and tests multi-entity (>=10) chaotic ASCII GIFs and integrate it into the repo.
+   Confidence: 0.89
+   Execution gap: Prompts were often short or vague and lacked explicit success criteria/targets (many 'no_explicit_target_multi_turn' and 'no_success_criteria_multi_turn' cases), forcing iterative tests and clarifications rather than a single precise implementation.
+9. 2026-02-04T01:05:32.727000Z -> 2026-02-07T01:05:32.727000Z
+   Primary user objective: Implement and launch an ASCII-based onboarding/gameplay engine (canvas/src/canvases/onboarding.tsx) as a paid product, including the necessary agent/arena infrastructure.
+   Confidence: 0.86
+   Execution gap: Work was somewhat diffuse and not always tightly focused—many Codex-driven prompts and troubleshooting (TikTok/gemini) plus several 'lazy' prompts lacking explicit targets or success criteria meant efforts weren't consistently precise toward shipping the onboarding engine.
+10. 2026-02-07T01:05:32.727000Z -> 2026-02-10T01:05:32.727000Z
+   Primary user objective: Build, integrate, and deploy a DAW-like ASCII animation web UI—implement the UI, commit changes, harden runtime, and expose it (e.g., via a Tailscale funnel) so it can be shown to coworkers.
+   Confidence: 0.93
+   Execution gap: Prompts were often too short and lacked explicit targets or success criteria (e.g., many single-word confirmations like 'yes' or 'commit and push'), making it unclear when a deliverable was finished or what exact outcome satisfied the user.
+11. 2026-02-10T01:05:32.727000Z -> 2026-02-13T01:05:32.727000Z
+   Primary user objective: Complete and prepare the Arena v0 platform for initial rollout by finishing remaining engine gaps (wire up the adapter pipeline, add eval harnesses and auction dashboard), finalize agent handoff, and commit/push changes so the product can be delivered to the first customer.
+   Confidence: 0.87
+   Execution gap: The agent interactions were often terse and underspecified (e.g., "continue. agent is probably done."), lacking explicit success criteria and concrete next-step commands, which reduces precision about what remaining tasks must be completed before rollout.
+</pre>
+  </div>
+</body>
+</html>

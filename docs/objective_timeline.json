@@ -1,0 +1,276 @@
+{
+  "generated_at": "2026-02-14T01:20:34.671211Z",
+  "rows": [
+    {
+      "inferred_primary_goal": "Develop a generative ASCII graphics/gaming engine and pipeline, starting with creating a 3D ASCII \"candle\" asset (and an observer/memory-palace integration) by converting candle models/images to 3D ASCII via an STL-to-ASCII workflow and integrating it into the canvas UI.",
+      "confidence": 0.9,
+      "evidence": [
+        "\u201cwhat if we create a generative engine that acts as a 2d ascii graphics and gaming engine all in one?\u201d",
+        "\u201cour first project will be a single candle and an observer\u201d",
+        "Requests to use an STL-to-ASCII approach: mention of Andrew Sink\u2019s STL-to-ASCII generator and finding an STL dataset to generate a candle",
+        "Pipeline plan: \u201cgenerate or retrieve an image of a candle \u2192 transform the image into a 3d asset \u2192 transform that 3d asset into 3d ascii asset \u2192 store it as an asset\u201d",
+        "Operational steps: enabled network access and asked to revert the STL-to-ASCII library to a specific commit"
+      ],
+      "execution_gap": "The session contained many short, context-light prompts and lacked explicit success criteria and concrete acceptance conditions, so work wasn\u2019t always tied to precise deliverables or verifiable outcomes.",
+      "window": {
+        "start": "2026-01-11T01:05:32.727000Z",
+        "end": "2026-01-14T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 1,
+        "prompts": 306,
+        "lazy_prompts": 35,
+        "lazy_prompt_ratio": 0.1144,
+        "median_prompt_to_commit_lag_hours": null,
+        "rework_ratio_7day": 0.0
+      }
+    },
+    {
+      "inferred_primary_goal": "Develop and document an agentic interface and experimental world-generation harness in the canvas project (update AGENTS.md and related canvas code) so agents can be seeded to grow and evaluate interface complexity.",
+      "confidence": 0.0,
+      "evidence": [
+        "Multiple prompts and session entries explicitly say 'update AGENTS.md' and contain AGENTS.md content.",
+        "Several turns discuss an 'experimental world generating harness' and giving it to an 'Agentic system' as a seed to grow a world.",
+        "Repeated references to mapping the 'scaling law (of interface complexity)' and 'Generalized Interface Intelligence'.",
+        "Top-churn files include canvas/src/* and AGENTS.md, showing simultaneous code and documentation edits in canvas.",
+        "Session snippets include concrete simulation tweaks (e.g., 'add the chicken and add airflow to the candle') implying UI/world simulation work."
+      ],
+      "execution_gap": "Many prompts were short or vague and lacked explicit targets and success criteria, causing iterative clarification rather than direct, commit-ready instructions.",
+      "window": {
+        "start": "2026-01-14T01:05:32.727000Z",
+        "end": "2026-01-17T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 4,
+        "prompts": 169,
+        "lazy_prompts": 7,
+        "lazy_prompt_ratio": 0.0414,
+        "median_prompt_to_commit_lag_hours": 0.4496744444444445,
+        "rework_ratio_7day": 0.10967741935483871
+      }
+    },
+    {
+      "inferred_primary_goal": "Iteratively develop and harden the SICM project\u2019s agent and Canvas systems by adding WorldSeed simulation fixtures, invariant checks, rendering/asset pipeline pieces, and documentation (AGENTS.md) to support agentic animations and testing.",
+      "confidence": 0.86,
+      "evidence": [
+        "Multiple commits adding WorldSeed trajectory fixtures and invariant-based tests (see lazy_prompt_commit_links for large inserts).",
+        "Top-churn files include AGENTS.md and canvas/* files (worldSeedPresets, world-seed-room, registry, index.ts).",
+        "Prompt activity asks about building agent instructions, creating animations/ascii renderers, and scaling agentic experiences (prompt_context_evidence samples).",
+        "Frequent short prompts and quick commit lag imply iterative, exploratory edits to tests, fixtures, and docs (stats: 13 commits, median prompt-to-commit lag ~0.058h)."
+      ],
+      "execution_gap": "Many prompts were short and underspecified\u2014lacking explicit targets and success criteria\u2014so work proceeded as exploratory small commits rather than tightly scoped, verifiable tasks.",
+      "window": {
+        "start": "2026-01-17T01:05:32.727000Z",
+        "end": "2026-01-20T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 13,
+        "prompts": 120,
+        "lazy_prompts": 6,
+        "lazy_prompt_ratio": 0.05,
+        "median_prompt_to_commit_lag_hours": 0.058168472222222226,
+        "rework_ratio_7day": 0.05019305019305019
+      }
+    },
+    {
+      "inferred_primary_goal": "Get the dspy.RLM feature integrated and running in the canvas project\u2014fix runtime errors, document the changes (README/CLAUDE/AGENTS), and run a demo to drive world/entity generation and measurement.",
+      "confidence": 0.92,
+      "evidence": [
+        "\u201cI just set up dspy.RLM in canvas/... make it run, make it clap.\u201d (claude)",
+        "User reported runtime errors: \u201cwe got this error the last time... `undefined is not an object`\u201d (claude)",
+        "\u201cnow that we have RLM working we can unleash the world(entity) generation...\u201d (claude)",
+        "Prompts to update docs: \u201cupdate CLAUDE.md too\u201d and \u201cupdate canvas/readme.md\u201d (claude)",
+        "Operational tasks: \u201cadd the .venv to .gitignore\u201d and \u201cadd information about our RLM implementation in canvas/README.md\u201d (codex)",
+        "Request to demonstrate results: \u201crun the system and show me what we've accomplished. it should be exciting ...\u201d (codex)"
+      ],
+      "execution_gap": "The agent often produced session summaries and repeated reminders instead of a concise prioritized checklist and concrete debugging/run steps to directly resolve the RLM failures and produce a demonstrable run.",
+      "window": {
+        "start": "2026-01-20T01:05:32.727000Z",
+        "end": "2026-01-23T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 4,
+        "prompts": 23,
+        "lazy_prompts": 0,
+        "lazy_prompt_ratio": 0.0,
+        "median_prompt_to_commit_lag_hours": 1.1984702777777778,
+        "rework_ratio_7day": 0.14893617021276595
+      }
+    },
+    {
+      "inferred_primary_goal": "Develop and integrate a recursive, self\u2011improving ASCII animation engine in the SICM repo\u2014implement genesis modules and CLI, connect the dspy RLM backend, build a 2D\u21923D (and time/4D) projection pipeline, and compile/share the resulting animations (GIFs).",
+      "confidence": 0.86,
+      "evidence": [
+        "Claude 2026-01-24T02:01:58: request for ASCII animation pipeline: '2d and 3d ascii renders ... project it onto a 3d (then 4d(time/animation)) space'",
+        "Claude 2026-01-24T07:27:20: explicit ask: 'compile the animation data we have into a gif so I can share it'",
+        "Claude 2026-01-24T12:25:16: high\u2011level objective: 'recursive self improving, self aware ascii engine that uses dspy RLM in the backend'",
+        "Codex 2026-01-24T04:52\u201305:05: series of operational prompts: 'git add . and write up a very detailed commit', 'run the next steps', 'what's the next complexity step up' showing execution and iterative runs",
+        "Commit activity around 2026-01-24T04:55: Add genesis core modules, wire CLI/schema, and related files (many insertions) and top\u2011churn files include genesis/src/cli/grow.ts and canvas/src/cli.tsx indicating CLI/genesis integration work"
+      ],
+      "execution_gap": "Prompts were often short and underspecified (many 'short_without_context' and 'no_success_criteria_multi_turn' flags), so work progressed via iterative, loosely guided commits rather than from a single precise success\u2011criteria driven plan.",
+      "window": {
+        "start": "2026-01-23T01:05:32.727000Z",
+        "end": "2026-01-26T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 13,
+        "prompts": 138,
+        "lazy_prompts": 14,
+        "lazy_prompt_ratio": 0.1014,
+        "median_prompt_to_commit_lag_hours": 0.03686805555555556,
+        "rework_ratio_7day": 0.12413793103448276
+      }
+    },
+    {
+      "inferred_primary_goal": "Produce cleaned repo artifacts that generate ASCII animations (and GIFs) of the project's entities\u2014starting from the amoeba/amoeba-ascii blueprint\u2014and apply that blueprint across other entities so you can visually verify the results.",
+      "confidence": 0.92,
+      "evidence": [
+        "\"YOU NEED TO CREATE ASCII ANIMATIONS OF THE ENTITIES THEMSELVES NOT JUST THE TEXT\" (codex)",
+        "\"do that then create animation gifs so I can see that your work is effective\" (codex)",
+        "\"I want the blueprint of what the script is doing at a high level to be evolved into every other entity in the repo\" (codex)",
+        "\"you should be able to investigate the repo on your own and understand what needs to be done\" (codex)",
+        "Comments about animating the farmhouse world and keeping/compressing scripts into one entity ladder script (claude)",
+        "AGENTS.md notes instructing agents to keep changes small, run locally, and document commands (codex)"
+      ],
+      "execution_gap": "The requests clearly demand ASCII animations/GIFs and repository cleanup, but no commits or concrete deliverables were produced in this window and the user did not define precise targets, formats, or acceptance criteria for the animations.",
+      "window": {
+        "start": "2026-01-26T01:05:32.727000Z",
+        "end": "2026-01-29T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 0,
+        "prompts": 12,
+        "lazy_prompts": 0,
+        "lazy_prompt_ratio": 0.0,
+        "median_prompt_to_commit_lag_hours": null,
+        "rework_ratio_7day": 0.0
+      }
+    },
+    {
+      "inferred_primary_goal": "Replace the slow NumPy-only Render KAN with a full three-layer KAN implemented in PyTorch, enable GPU training and real-time progress/output (fix train scripts), and produce faster, more compelling ASCII-frame animations.",
+      "confidence": 0.86,
+      "evidence": [
+        "Claude: 'replace the slow NumPy-only Render KAN implementation with PyTorch' and 'we implemented GPU training in torch' (2026-01-29 session)",
+        "Claude: 'Implement the following plan: Three-Layer KAN Stack' and multiple summaries asking to implement \u03a6S/\u03a6R layers (repo_fallback/session prompts)",
+        "Claude: 'the training is taking a really long time ... there's no progress output yet!' and requests to add a step-by-step progress viewer (2026-01-29 08:01\u201308:05)",
+        "Codex: many short directives to 'check status', 'the train script should have outputs', and 'don't interrupt the training' (multiple 2026-01-29 prompts)",
+        "Top-churn files are KAN-related (canvas/py/kan/*) and AGENTS.md showing active changes around training and agent coordination"
+      ],
+      "execution_gap": "The agent frequently used short/underspecified prompts without explicit success criteria or clear progress metrics, causing ambiguity about what 'fixed' or 'complete' training looks like.",
+      "window": {
+        "start": "2026-01-29T01:05:32.727000Z",
+        "end": "2026-02-01T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 6,
+        "prompts": 202,
+        "lazy_prompts": 20,
+        "lazy_prompt_ratio": 0.099,
+        "median_prompt_to_commit_lag_hours": 0.04603902777777778,
+        "rework_ratio_7day": 0.09375
+      }
+    },
+    {
+      "inferred_primary_goal": "Implement and iterate an LLM-driven freeform ASCII animation generator that creates and tests multi-entity (>=10) chaotic ASCII GIFs and integrate it into the repo.",
+      "confidence": 0.89,
+      "evidence": [
+        "2026-02-01: \"Implement the following plan: Freeform ASCII Animation Generator\" and file created (canvas/.../freeform_ascii_animator.py, 450 lines).",
+        "2026-02-01: repeated test/run logs and outputs (quick 4-frame test, quick freeform test to generate actual GIF, completed/failed runs).",
+        "2026-02-01 12:00:01: \"MAKE SOMETHING WITH A LOT OF FUCKING ENTITIES! add to the global rules that we never do an ascii animation without at least 10 entites.\"",
+        "2026-02-01 12:13:29: \"RUN MAXIMUM CHAOS - 16 ENTITIES!\" (completed test run showing focus on multi-entity chaos)."
+      ],
+      "execution_gap": "Prompts were often short or vague and lacked explicit success criteria/targets (many 'no_explicit_target_multi_turn' and 'no_success_criteria_multi_turn' cases), forcing iterative tests and clarifications rather than a single precise implementation.",
+      "window": {
+        "start": "2026-02-01T01:05:32.727000Z",
+        "end": "2026-02-04T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 11,
+        "prompts": 133,
+        "lazy_prompts": 10,
+        "lazy_prompt_ratio": 0.0752,
+        "median_prompt_to_commit_lag_hours": 0.08875194444444445,
+        "rework_ratio_7day": 0.012093726379440665
+      }
+    },
+    {
+      "inferred_primary_goal": "Implement and launch an ASCII-based onboarding/gameplay engine (canvas/src/canvases/onboarding.tsx) as a paid product, including the necessary agent/arena infrastructure.",
+      "confidence": 0.86,
+      "evidence": [
+        "Claude: 'I want us to launch this in to a project that people want to pay to experience... onboarding.tsx ... an ASCII gameplay engine that understands the user' (2026-02-06)",
+        "Claude: 'Implement the following plan: ASCII Gameplay Engine That Understands the User' (2026-02-06)",
+        "Repo churn shows edits to arena_v0/cli.py, arena_v0/engine.py, canvas/AGENTS.md, and canvas/src/server.ts\u2014consistent with building engine and agent infra"
+      ],
+      "execution_gap": "Work was somewhat diffuse and not always tightly focused\u2014many Codex-driven prompts and troubleshooting (TikTok/gemini) plus several 'lazy' prompts lacking explicit targets or success criteria meant efforts weren't consistently precise toward shipping the onboarding engine.",
+      "window": {
+        "start": "2026-02-04T01:05:32.727000Z",
+        "end": "2026-02-07T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 9,
+        "prompts": 72,
+        "lazy_prompts": 1,
+        "lazy_prompt_ratio": 0.0139,
+        "median_prompt_to_commit_lag_hours": 1.0389223611111111,
+        "rework_ratio_7day": 0.03333333333333333
+      }
+    },
+    {
+      "inferred_primary_goal": "Build, integrate, and deploy a DAW-like ASCII animation web UI\u2014implement the UI, commit changes, harden runtime, and expose it (e.g., via a Tailscale funnel) so it can be shown to coworkers.",
+      "confidence": 0.93,
+      "evidence": [
+        "Requests to use an image and incorporate it into the web UI (ascii_daw_ui_mock_from_image.jsx) and to make a DAW-like ASCII animation generator.",
+        "Explicit asks to patch and launch the development environment and to launch the page on a Tailscale funnel so it can be shown to a coworker.",
+        "Multiple short commit prompts ('commit and push', 'then push') and commits adding a DAW-style animation UI route, controls, and hardening runtime/container changes.",
+        "Higher churn on UI and sidecar files (arena_v0/ui_server.py, sidecar/Dockerfile) and prompts like 'go nuts and build this project' and 'Implement the plan.'"
+      ],
+      "execution_gap": "Prompts were often too short and lacked explicit targets or success criteria (e.g., many single-word confirmations like 'yes' or 'commit and push'), making it unclear when a deliverable was finished or what exact outcome satisfied the user.",
+      "window": {
+        "start": "2026-02-07T01:05:32.727000Z",
+        "end": "2026-02-10T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 32,
+        "prompts": 218,
+        "lazy_prompts": 26,
+        "lazy_prompt_ratio": 0.1193,
+        "median_prompt_to_commit_lag_hours": 0.031185555555555557,
+        "rework_ratio_7day": 0.19148936170212766
+      }
+    },
+    {
+      "inferred_primary_goal": "Complete and prepare the Arena v0 platform for initial rollout by finishing remaining engine gaps (wire up the adapter pipeline, add eval harnesses and auction dashboard), finalize agent handoff, and commit/push changes so the product can be delivered to the first customer.",
+      "confidence": 0.87,
+      "evidence": [
+        "Multiple prompts instructing agent handoff and commits: \"instruct all the finished agents to commit and push their changes\" and repeated \"I think the agents are done. check them and proceed.\"",
+        "Explicit implementation plan: \"Wire Up Adapter Pipeline, Add Eval Harnesses, Add Auction Dashboard\" and notes that the engine is ~85% complete with remaining gaps",
+        "High churn in core files (arena_v0/cli.py, ui_server.py, world.py, adapter_job_runner.py) and a large commit titled \"gamification v2: Strategy Genomics + Consensus Realms\"",
+        "Direct intention to ship: \"get this platform in to the hands of our first customer immediately. do whatever you have to.\" and creation/update of AGENTS.md for handoff"
+      ],
+      "execution_gap": "The agent interactions were often terse and underspecified (e.g., \"continue. agent is probably done.\"), lacking explicit success criteria and concrete next-step commands, which reduces precision about what remaining tasks must be completed before rollout.",
+      "window": {
+        "start": "2026-02-10T01:05:32.727000Z",
+        "end": "2026-02-13T01:05:32.727000Z",
+        "days": 3.0
+      },
+      "stats": {
+        "commits": 23,
+        "prompts": 212,
+        "lazy_prompts": 20,
+        "lazy_prompt_ratio": 0.0943,
+        "median_prompt_to_commit_lag_hours": 0.03433083333333333,
+        "rework_ratio_7day": 0.17857142857142858
+      }
+    }
+  ]
+}
