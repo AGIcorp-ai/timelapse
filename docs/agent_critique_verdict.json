@@ -1,0 +1,114 @@
+{
+  "agent_verdict": {
+    "overall_competence": "mixed",
+    "confidence": 0.86,
+    "primary_failure_mode": "The agent repeatedly turns underspecified prompts into large, coupled changes without first extracting scope, acceptance criteria, and deterministic verification steps.",
+    "highest_leverage_improvement": "Before any non-trivial implementation, require an explicit prompt-to-commit spec (goal, scope, success criteria, acceptance command, out-of-scope) and ask clarifying questions or record a waiver when the prompt is ambiguous."
+  },
+  "agent_failures": [
+    {
+      "rank": 1,
+      "pattern": "Spec-by-impulse execution",
+      "evidence": "lazy_prompt_ratio\u22480.087 (97/1111) dominated by no_explicit_target_multi_turn/no_success_criteria_multi_turn; SICM commit 950d585c (+3672 LOC) from prompt \"well now what? keep generating and testing\"; 4D-bot a09086ce (+534 LOC) from \"make a new website for real llama\"; 4D-bot 15c03744 (+1737 LOC) from \"continue. agent is probably done.\"",
+      "impact": "Scope creep and misaligned deliverables, increased coupling and audit difficulty, and additional follow-up work when expectations are later clarified.",
+      "counterfactual": "A competent agent would have paused to request target components, UX/behavior goals, and measurable acceptance checks, then delivered a small, reviewed increment aligned to those criteria."
+    },
+    {
+      "rank": 2,
+      "pattern": "Control-surface churn without stabilization",
+      "evidence": "Top churn files: AGENTS.md (24 touches), arena_v0/cli.py (21), arena_v0/ui_server.py (16), CLAUDE.md (14), arena_v0/world.py (10).",
+      "impact": "Higher regression risk in entrypoints and operator docs, fragile onboarding/run procedures, and increased difficulty replaying/auditing behavior across revisions.",
+      "counterfactual": "A competent agent would stabilize these surfaces via explicit contracts/adapters, add integration tests, and batch breaking changes behind feature flags with protected review."
+    },
+    {
+      "rank": 3,
+      "pattern": "Insufficient pre-merge gating and audit discipline",
+      "evidence": "median_prompt_to_commit_lag_hours\u22480.054 (~3.2 minutes); patchy commit messages like \"forgot this\" (b33379c3) and \"one thing\" (a439e64d) suggest post-hoc fixes; rework_ratio_7day\u22480.073 (peaks up to 0.183).",
+      "impact": "Lower confidence that changes were deterministically tested before landing, more patch-after-the-fact corrections, and reduced trace audit quality.",
+      "counterfactual": "A competent agent would run deterministic suites/invariant checks before committing, record acceptance results, and avoid landing changes without CI confirmation."
+    },
+    {
+      "rank": 4,
+      "pattern": "Additive complexity ratchet",
+      "evidence": "703,643 insertions vs 14,159 deletions over the window; large feature/system additions (e.g., gamification v2, genesis modules) with limited corresponding consolidation/removal.",
+      "impact": "Growing maintenance burden, duplicated pathways, unclear deprecation state, and increased likelihood of latent dead code and inconsistent behavior.",
+      "counterfactual": "A competent agent would refactor/replace with explicit deprecations, keep changes incremental, and enforce a deletion/refactor budget for new subsystems."
+    },
+    {
+      "rank": 5,
+      "pattern": "Artifact-as-proof instead of CI-reproducible evidence",
+      "evidence": "Commits adding run artifacts/GIFs/PDFs (e.g., ascii-engine media changes 1ed79cad; genesis artifacts and PDFs like 689dc073) without a demonstrated CI generation/provenance pipeline; review notes \"run artifacts\" (e.g., 86ba353f).",
+      "impact": "Repo bloat and unclear provenance; harder to tell whether artifacts correspond to current code; reduced determinism and replay value.",
+      "counterfactual": "A competent agent would generate artifacts via checked-in scripts, track manifests/checksums, and have CI produce/verify canonical snapshots."
+    },
+    {
+      "rank": 6,
+      "pattern": "Objective drift from deterministic collation toward product feature building",
+      "evidence": "Review notes heavy investment in building features inside SICM/4D-bot/ascii-engine instead of prioritizing deterministic ingestion/collation of external session sources; subsystem bursts (genesis, gamification v2, \"real llama website\") triggered by vague prompts.",
+      "impact": "Opportunity cost against the inferred primary goal (deterministic, auditable, replayable evolution with tight prompt\u2192implementation alignment) and diluted engineering focus.",
+      "counterfactual": "A competent agent would redirect ambiguous feature requests into the primary objective workstream (collation + determinism + audit tooling) or require an explicit rationale and success metrics for product scope."
+    }
+  ],
+  "capability_gaps": [
+    {
+      "gap": "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)",
+      "severity": "critical",
+      "workaround": "Provide a filled prompt template (goal/scope/success criteria/acceptance/out-of-scope) and refuse implementation until it is complete."
+    },
+    {
+      "gap": "Architectural boundary setting and coupling control for high-churn control surfaces (CLI/UI/docs)",
+      "severity": "high",
+      "workaround": "Introduce explicit interface contracts and require PR review by owners for hotspot files; constrain changes to adapters rather than core entrypoints."
+    },
+    {
+      "gap": "Workflow/CI-first discipline for determinism and auditability",
+      "severity": "high",
+      "workaround": "Run deterministic replay/invariant suites locally and in CI for every PR; require recorded acceptance outputs and golden-signature review."
+    },
+    {
+      "gap": "Incremental delivery and change management (small, reviewable steps vs. subsystem bursts)",
+      "severity": "medium",
+      "workaround": "Break work into staged PRs with explicit milestones and a per-PR LOC/diffstat cap unless waived with a design note."
+    },
+    {
+      "gap": "Repo hygiene and artifact provenance (binaries/PDFs/media tied to generators and manifests)",
+      "severity": "medium",
+      "workaround": "Store artifacts only when generated by scripts; require manifests with commands, SHAs, timestamps, and checksums; otherwise keep artifacts out of the repo."
+    }
+  ],
+  "recommended_guardrails": [
+    {
+      "guardrail": "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+      "enforcement": "Pre-commit or CI diffstat check that blocks merges unless a PROMPT.md (or commit trailer block) is present and matches a required schema.",
+      "expected_impact": "Prevents large speculative commits driven by vague prompts and improves prompt\u2192implementation alignment and auditability."
+    },
+    {
+      "guardrail": "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)",
+      "enforcement": "CODEOWNERS + branch protection requiring PR approvals and required CI checks when protected paths change.",
+      "expected_impact": "Reduces destabilizing churn in high-coupling surfaces and forces deliberate interface evolution."
+    },
+    {
+      "guardrail": "Determinism & invariant test gate for simulation/seed/runner changes",
+      "enforcement": "CI workflow that runs deterministic replay + invariant suites and compares canonical outputs/checksums; require explicit golden-update flag and explanation when outputs change.",
+      "expected_impact": "Prevents silent behavior drift and makes replayability/determinism guarantees enforceable."
+    },
+    {
+      "guardrail": "Artifact provenance gate for binaries/media/PDF/run artifacts",
+      "enforcement": "Pre-commit hook rejects new binary/media files unless a checked-in generator script is referenced and artifacts/manifest.json is updated with command, git SHA, timestamp, and checksums.",
+      "expected_impact": "Prevents repo bloat and non-reproducible artifacts while preserving auditable, deterministic outputs."
+    },
+    {
+      "guardrail": "Ambiguity detection requires clarifying questions or a recorded proceed-with-assumptions waiver",
+      "enforcement": "Classifier flags short/ambiguous prompts; CI/pre-commit requires either answered clarification checklist or WAIVER.md with assumptions/risks before allowing commits.",
+      "expected_impact": "Directly reduces spec-by-impulse behavior and lowers rework caused by guessed intent."
+    }
+  ],
+  "stability_scores": {
+    "intent_interpretation": 0.48,
+    "code_stability": 0.44,
+    "architectural_coherence": 0.41,
+    "objective_alignment": 0.46,
+    "clarification_seeking": 0.22
+  },
+  "next_review_trigger": "Trigger the next review after either (a) two weeks of changes or (b) any occurrence of a >500 LOC commit or edits to protected hotspot files landing without a filled prompt template and passing determinism/invariant CI."
+}

@@ -1,0 +1,227 @@
+{
+  "fused_verdict": {
+    "readiness": "guarded",
+    "confidence": 0.83,
+    "headline": "The agent can execute the highest-priority 4D-bot stabilization work only under strict guardrails and staged, test-anchored decomposition; the large SICM event-log action is blocked as-is.",
+    "meta_trajectory": "diverging",
+    "agent_competence": "mixed"
+  },
+  "fused_actions": [
+    {
+      "rank": 1,
+      "action": "Create arena_v0/services/world_service.py as the sole facade for world init/tick/mutation and refactor arena_v0/ui_server.py to be request-parse -> WorldService call -> response only; prohibit direct world mutation from ui_server.py.",
+      "repo": "4D-bot",
+      "effort": "medium",
+      "agent_risk": "guarded",
+      "matching_failures": [
+        "Spec-by-impulse execution",
+        "Control-surface churn without stabilization",
+        "Insufficient pre-merge gating and audit discipline",
+        "Additive complexity ratchet"
+      ],
+      "matching_gaps": [
+        "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)",
+        "Architectural boundary setting and coupling control for high-churn control surfaces (CLI/UI/docs)",
+        "Workflow/CI-first discipline for determinism and auditability",
+        "Incremental delivery and change management (small, reviewable steps vs. subsystem bursts)"
+      ],
+      "guardrails_required": [
+        "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+        "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)",
+        "Determinism & invariant test gate for simulation/seed/runner changes",
+        "Ambiguity detection requires clarifying questions or a recorded proceed-with-assumptions waiver"
+      ],
+      "execution_notes": "Constrain to 2\u20133 staged PRs with net diff caps (e.g., <250\u2013300 LOC unless waived). PR1: introduce WorldService skeleton with zero behavior change and route exactly one endpoint; PR2: migrate remaining endpoints one-by-one and delete/forbid direct mutation calls in ui_server.py (add a grep-based test/lint rule); PR3: cleanup + adapter-level smoke tests. Require determinism test (Action 2) to pass before any mechanical behavior change; any intentional output change must use explicit golden-update flow with reviewer sign-off."
+    },
+    {
+      "rank": 2,
+      "action": "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic.",
+      "repo": "4D-bot",
+      "effort": "medium",
+      "agent_risk": "guarded",
+      "matching_failures": [
+        "Insufficient pre-merge gating and audit discipline",
+        "Artifact-as-proof instead of CI-reproducible evidence",
+        "Spec-by-impulse execution"
+      ],
+      "matching_gaps": [
+        "Workflow/CI-first discipline for determinism and auditability",
+        "Incremental delivery and change management (small, reviewable steps vs. subsystem bursts)",
+        "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)"
+      ],
+      "guardrails_required": [
+        "Determinism & invariant test gate for simulation/seed/runner changes",
+        "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+        "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)"
+      ],
+      "execution_notes": "Build the smallest deterministic harness first: fixed seed, fixed tick count, assert basic invariants (entity counts/totals) and deterministic serialization order; only then add snapshot hash. Add an explicit update mechanism (e.g., UPDATE_GOLDENS=1) and make CI reject golden changes unless the flag is set plus an explanation is recorded. Avoid engine rewrites: if determinism requires changes, isolate RNG behind injection and remove time/order nondeterminism (dict iteration, timestamps) with minimal diffs."
+    },
+    {
+      "rank": 3,
+      "action": "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures.",
+      "repo": "SICM",
+      "effort": "high",
+      "agent_risk": "blocked",
+      "matching_failures": [
+        "Spec-by-impulse execution",
+        "Additive complexity ratchet",
+        "Objective drift from deterministic collation toward product feature building",
+        "Control-surface churn without stabilization"
+      ],
+      "matching_gaps": [
+        "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)",
+        "Architectural boundary setting and coupling control for high-churn control surfaces (CLI/UI/docs)",
+        "Workflow/CI-first discipline for determinism and auditability",
+        "Repo hygiene and artifact provenance (binaries/PDFs/media tied to generators and manifests)"
+      ],
+      "guardrails_required": [
+        "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+        "Ambiguity detection requires clarifying questions or a recorded proceed-with-assumptions waiver",
+        "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)",
+        "Determinism & invariant test gate for simulation/seed/runner changes",
+        "Artifact provenance gate for binaries/media/PDF/run artifacts"
+      ],
+      "execution_notes": "Blocked until a human provides a minimal schema/RFC (fields, determinism rules, versioning, what is in/out-of-scope). After schema is fixed, decompose: (1) add types only; (2) add pure deterministic append/serialize helpers (no timestamps; stable IDs); (3) emit behind a feature flag; (4) tests assert counts/types before asserting full equality/checksums; (5) only then require broader adoption. Enforce a 'no parallel loggers' rule: adding this must come with deprecations/removals or a documented transition plan."
+    },
+    {
+      "rank": 4,
+      "action": "Add CI gating in both repos: fail PRs unless (a) commit/PR references a prompt ID, (b) a minimal prompt template is present (objective, acceptance criteria, target files, seed/state), and (c) deterministic fixture/invariant tests pass.",
+      "repo": "4D-bot + SICM",
+      "effort": "medium",
+      "agent_risk": "guarded",
+      "matching_failures": [
+        "Insufficient pre-merge gating and audit discipline",
+        "Spec-by-impulse execution",
+        "Control-surface churn without stabilization"
+      ],
+      "matching_gaps": [
+        "Workflow/CI-first discipline for determinism and auditability",
+        "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)",
+        "Architectural boundary setting and coupling control for high-churn control surfaces (CLI/UI/docs)"
+      ],
+      "guardrails_required": [
+        "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+        "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)",
+        "Determinism & invariant test gate for simulation/seed/runner changes",
+        "Ambiguity detection requires clarifying questions or a recorded proceed-with-assumptions waiver",
+        "Artifact provenance gate for binaries/media/PDF/run artifacts"
+      ],
+      "execution_notes": "Implement minimal enforcement first (avoid a big framework): require a PROMPT.md (or commit trailer block) with fixed headings; require Prompt-ID trailer/link; require a single acceptance command string; fail if missing. Provide WAIVER.md escape hatch with explicit assumptions/risks and required approval. Turn on determinism jobs incrementally (start with 4D-bot arena determinism test once added). Keep changes small and reversible; add documentation of how to comply and how to update goldens."
+    }
+  ],
+  "compound_risks": [
+    {
+      "meta_risk": "Determinism and replay degrade under feature pressure due to vague prompts and extremely short prompt-to-commit cycles.",
+      "agent_failure": "Spec-by-impulse execution",
+      "compound_severity": "critical",
+      "explanation": "Vague prompts trigger guessed implementations and scope creep; with a fast prompt\u2192commit cadence and weak gating, behavior drift lands without detection, forcing further coupled fixes and degrading replay/auditability.",
+      "mitigation": "Enforce prompt template + ambiguity/waiver workflow before coding, and require determinism/invariant CI with strict golden-update controls (explicit flag + explanation + reviewer approval)."
+    },
+    {
+      "meta_risk": "Arena v0 coupling blow-up where UI changes and mechanic changes require simultaneous edits across ui_server/world/engine, increasing regressions and slowing stabilization.",
+      "agent_failure": "Control-surface churn without stabilization",
+      "compound_severity": "high",
+      "explanation": "The plan targets a known hotspot (ui_server.py); the agent\u2019s history of repeated edits in entrypoints raises the chance of broad, intertwined changes without stable boundaries, amplifying regression risk.",
+      "mitigation": "CODEOWNERS/branch protection on hotspot files + staged refactor through a WorldService facade + a deterministic golden tick test required for merges touching world evolution."
+    },
+    {
+      "meta_risk": "Tests become symbolic (pass while behavior drifts) because boundary contracts (UI<->domain, runner<->artifacts) are not enforced.",
+      "agent_failure": "Artifact-as-proof instead of CI-reproducible evidence",
+      "compound_severity": "high",
+      "explanation": "If the agent relies on ad-hoc artifacts or casually updated goldens, tests can greenlight unintended behavior changes, reducing trust in fixtures and replay traces.",
+      "mitigation": "Artifact provenance gate + deterministic snapshot generation in CI + golden updates only via explicit update mode and documented rationale; add boundary-focused integration tests rather than only unit-level assertions."
+    },
+    {
+      "meta_risk": "SICM becomes a multi-engine lab (WorldSeed/Genesis/KAN/world-sim) with no single hardened demo contract, forcing a costly unification rewrite later.",
+      "agent_failure": "Additive complexity ratchet",
+      "compound_severity": "critical",
+      "explanation": "A canonical event log is a contract decision; the agent\u2019s tendency to add new layers/subsystems risks creating yet another parallel pathway, accelerating fragmentation and future rewrite cost.",
+      "mitigation": "Human-decided canonical contract (short RFC) + deprecation/removal budget + CI checks that block introducing parallel logging paths without removing or formally deprecating existing ones."
+    }
+  ],
+  "blocked_actions": [
+    {
+      "action": "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures.",
+      "blocking_gap": "Proactive clarification and requirements shaping (extracting targets, success criteria, acceptance commands before building)",
+      "resolution": "decompose",
+      "decomposition": "Human-only: write minimal schema/RFC (fields, ordering rules, ID strategy, versioning, what counts as an artifact, out-of-scope). Agent-safe steps after approval: (1) add eventLog.ts types only; (2) add deterministic serializer/helpers with no timestamps; (3) emit log behind feature flag; (4) tests assert stable counts/types; (5) add checksum/equality assertions with explicit golden-update workflow."
+    }
+  ],
+  "tension_points": [
+    {
+      "guardrail": "Hotspot file protection for control surfaces (arena_v0/* entrypoints, canvas CLI, AGENTS.md/CLAUDE.md)",
+      "constrained_action": "Create arena_v0/services/world_service.py as the sole facade for world init/tick/mutation and refactor arena_v0/ui_server.py to be request-parse -> WorldService call -> response only; prohibit direct world mutation from ui_server.py.",
+      "tension": "Protection/approvals slow refactoring velocity on the very files that must change, increasing coordination overhead.",
+      "resolution": "Guardrail wins: require approvals and keep PRs small and endpoint-by-endpoint so review remains tractable while preventing destabilizing churn."
+    },
+    {
+      "guardrail": "Prompt Template Gate for high-impact changes (>200 LOC requires Goal/Scope/Success criteria/Acceptance command/Out-of-scope)",
+      "constrained_action": "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic.",
+      "tension": "Determinism work can exceed diff thresholds and encourages exploratory edits, which the gate will block without up-front scoping.",
+      "resolution": "Guardrail wins with a waiver path: require staged PRs and allow a waiver only with a short design note and explicit acceptance command plus determinism CI proof."
+    },
+    {
+      "guardrail": "Determinism & invariant test gate for simulation/seed/runner changes",
+      "constrained_action": "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic.",
+      "tension": "Making ticking deterministic may legitimately change outputs; a strict gate will fail until goldens are updated, risking a loop of 'update until green'.",
+      "resolution": "Meta goal wins but only under controlled golden updates: require explicit UPDATE_GOLDENS flag, explanation, and reviewer sign-off; default CI blocks golden changes."
+    },
+    {
+      "guardrail": "Artifact provenance gate for binaries/media/PDF/run artifacts",
+      "constrained_action": "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures.",
+      "tension": "Event-log artifacts are desirable outputs, but the guardrail blocks ad-hoc artifacts and requires generator/manifests, increasing implementation overhead.",
+      "resolution": "Guardrail wins: only accept event-log artifacts produced by deterministic codepaths with manifest/checksum support; otherwise keep artifacts out of the repo."
+    }
+  ],
+  "stability_overlay": {
+    "dimensions_below_threshold": [
+      "intent_interpretation",
+      "code_stability",
+      "architectural_coherence",
+      "objective_alignment",
+      "clarification_seeking"
+    ],
+    "affected_actions": [
+      "Create arena_v0/services/world_service.py as the sole facade for world init/tick/mutation and refactor arena_v0/ui_server.py to be request-parse -> WorldService call -> response only; prohibit direct world mutation from ui_server.py.",
+      "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic.",
+      "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures.",
+      "Add CI gating in both repos: fail PRs unless (a) commit/PR references a prompt ID, (b) a minimal prompt template is present (objective, acceptance criteria, target files, seed/state), and (c) deterministic fixture/invariant tests pass."
+    ],
+    "recommended_focus": "Improve clarification_seeking first via enforced prompt templates + ambiguity/waiver workflow, because it gates intent interpretation and prevents speculative refactors that would further degrade code stability and architectural coherence."
+  },
+  "execution_sequence": [
+    {
+      "phase": 1,
+      "actions": [
+        "Add CI gating in both repos: fail PRs unless (a) commit/PR references a prompt ID, (b) a minimal prompt template is present (objective, acceptance criteria, target files, seed/state), and (c) deterministic fixture/invariant tests pass."
+      ],
+      "preconditions": "Human defines the prompt-ID format/location and the minimal prompt template schema; set up CODEOWNERS/branch protection for hotspot paths and add waiver mechanics (WAIVER.md + approval).",
+      "expected_stability_impact": "clarification_seeking, objective_alignment, code_stability"
+    },
+    {
+      "phase": 2,
+      "actions": [
+        "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic."
+      ],
+      "preconditions": "Determinism/invariant CI gate wired to run this test; golden-update workflow defined (explicit flag + explanation + review).",
+      "expected_stability_impact": "code_stability, architectural_coherence"
+    },
+    {
+      "phase": 3,
+      "actions": [
+        "Create arena_v0/services/world_service.py as the sole facade for world init/tick/mutation and refactor arena_v0/ui_server.py to be request-parse -> WorldService call -> response only; prohibit direct world mutation from ui_server.py."
+      ],
+      "preconditions": "Arena determinism test passing and required in CI; hotspot protection active; staged PR plan agreed (endpoint-by-endpoint) with diff caps.",
+      "expected_stability_impact": "architectural_coherence, code_stability"
+    },
+    {
+      "phase": 4,
+      "actions": [
+        "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures."
+      ],
+      "preconditions": "Human-authored schema/RFC approved; SICM determinism gate active; artifact provenance gate in place; feature-flagged rollout plan and 'no parallel logger' policy agreed.",
+      "expected_stability_impact": "objective_alignment, architectural_coherence, intent_interpretation"
+    }
+  ],
+  "next_review_trigger": "Trigger the next review when WorldService refactor + arena determinism golden test land (or if arena_v0/ui_server.py or canvas/src/cli.tsx exceeds +300 LOC net change in a week without new deterministic/integration coverage), or immediately on any >500 LOC commit or any protected hotspot change landing without a filled prompt template and passing determinism/invariant CI."
+}

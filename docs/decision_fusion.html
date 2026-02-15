@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Decision Fusion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .readiness-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .readiness-badge.ready { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+      .readiness-badge.guarded { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+      .readiness-badge.blocked { background: #fde8e8; color: #b91c1c; border: 1px solid #fca5a5; }
+      .verdict-header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .confidence-bar {
+        width: 120px;
+        height: 10px;
+        background: var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .confidence-fill {
+        height: 100%;
+        border-radius: 6px;
+        background: var(--accent);
+      }
+      .echo-row {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .echo-item {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f9fafb;
+      }
+      .echo-item .echo-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .risk-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .risk-clear { background: #d1fae5; color: #065f46; }
+      .risk-guarded { background: #fef3c7; color: #92400e; }
+      .risk-blocked { background: #fde8e8; color: #b91c1c; }
+      .severity-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .severity-low { background: #d1fae5; color: #065f46; }
+      .severity-medium { background: #fef3c7; color: #92400e; }
+      .severity-high { background: #fde8e8; color: #b91c1c; }
+      .severity-critical { background: #7f1d1d; color: #fecaca; }
+      .action-card, .risk-card, .blocked-card, .tension-card, .phase-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+      }
+      .blocked-card { border-color: #fca5a5; }
+      .action-card h3, .risk-card h3, .blocked-card h3, .tension-card h3, .phase-card h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+      .action-card p, .risk-card p, .blocked-card p, .tension-card p, .phase-card p {
+        margin: 0 0 6px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 6px 0;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-family: "IBM Plex Mono", monospace;
+        background: #eef2ff;
+        color: #3730a3;
+      }
+      .tag.failure { background: #fde8e8; color: #b91c1c; }
+      .tag.gap { background: #fef3c7; color: #92400e; }
+      .tag.guardrail { background: #d1fae5; color: #065f46; }
+      .tension-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 600px) { .tension-cols { grid-template-columns: 1fr; } }
+      .tension-side {
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
+      .tension-side.guardrail-side { background: #d1fae5; color: #065f46; }
+      .tension-side.action-side { background: #eef2ff; color: #3730a3; }
+      details summary {
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--accent);
+      }
+      .stability-alert {
+        padding: 14px 18px;
+        border: 1px solid #fcd34d;
+        border-radius: 10px;
+        background: #fffbeb;
+        margin-bottom: 18px;
+      }
+      .stability-alert h3 { margin: 0 0 8px; font-size: 0.95rem; color: #92400e; }
+      .stability-alert p { margin: 0 0 4px; font-size: 0.88rem; color: #78350f; }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .back-link:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel" style="margin-top: 32px;">
+        <a class="back-link" href="index.html">&larr; Back to Dashboard</a>
+        <h1>Decision Fusion</h1>
+        <p style="color: var(--muted);">Cross-referencing engineering plan and agent performance to produce conflict-resolved, agent-aware execution sequences.</p>
+
+        <div id="fusion-container">
+          <p style="color: var(--muted);">Loading fusion verdict data...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built for legible engineering analytics. Source:
+        <a href="https://github.com/AGIcorp-ai/timelapse">AGIcorp-ai/timelapse</a>
+      </p>
+    </footer>
+
+    <script>
+    (function () {
+      fetch("decision_fusion_verdict.json")
+        .then(function (r) { return r.json(); })
+        .then(render)
+        .catch(function (err) {
+          document.getElementById("fusion-container").innerHTML =
+            "<p>Failed to load verdict: " + err.message + "</p>";
+        });
+
+      function esc(s) {
+        var d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function riskClass(v) {
+        return "risk-" + (v || "guarded").toLowerCase();
+      }
+
+      function severityClass(v) {
+        return "severity-" + (v || "medium").toLowerCase();
+      }
+
+      function tagsHtml(arr, cls) {
+        if (!arr || !arr.length) return "";
+        return '<div class="tag-list">' + arr.map(function (t) {
+          return '<span class="tag ' + cls + '">' + esc(t) + '</span>';
+        }).join("") + '</div>';
+      }
+
+      function render(data) {
+        var fv = data.fused_verdict || {};
+        var actions = data.fused_actions || [];
+        var compound = data.compound_risks || [];
+        var blocked = data.blocked_actions || [];
+        var tensions = data.tension_points || [];
+        var overlay = data.stability_overlay || {};
+        var sequence = data.execution_sequence || [];
+        var trigger = data.next_review_trigger || "";
+
+        var readiness = (fv.readiness || "guarded").toLowerCase();
+        var conf = fv.confidence || 0;
+        var confPct = Math.round(conf * 100);
+
+        var html = "";
+
+        // Verdict header
+        html += '<div class="verdict-header">';
+        html += '<span class="readiness-badge ' + readiness + '">' + esc(readiness) + '</span>';
+        html += '<span style="font-size:0.88rem;color:var(--muted);">Confidence: ' + confPct + '%</span>';
+        html += '<div class="confidence-bar"><div class="confidence-fill" style="width:' + confPct + '%;"></div></div>';
+        html += '</div>';
+
+        // Headline
+        html += '<h2>Headline</h2>';
+        html += '<p style="font-size:1.05rem;font-weight:500;">' + esc(fv.headline || "") + '</p>';
+
+        // Echo row
+        html += '<div class="echo-row">';
+        html += '<div class="echo-item"><div class="echo-label">Meta Trajectory</div><div>' + esc(fv.meta_trajectory || "") + '</div></div>';
+        html += '<div class="echo-item"><div class="echo-label">Agent Competence</div><div>' + esc(fv.agent_competence || "") + '</div></div>';
+        html += '</div>';
+
+        // Stability overlay
+        var belowThreshold = overlay.dimensions_below_threshold || [];
+        if (belowThreshold.length) {
+          html += '<div class="stability-alert">';
+          html += '<h3>Stability Warning</h3>';
+          html += '<p><strong>Dimensions below 0.5:</strong> ' + belowThreshold.map(esc).join(", ") + '</p>';
+          if ((overlay.affected_actions || []).length) {
+            html += '<p><strong>Affected actions:</strong> ' + (overlay.affected_actions || []).map(esc).join(", ") + '</p>';
+          }
+          html += '<p><strong>Recommended focus:</strong> ' + esc(overlay.recommended_focus || "") + '</p>';
+          html += '</div>';
+        }
+
+        // Fused actions
+        html += '<h2>Fused Actions</h2>';
+        actions.forEach(function (a) {
+          var risk = (a.agent_risk || "guarded").toLowerCase();
+          html += '<div class="action-card">';
+          html += '<h3>#' + (a.rank || "") + ' ' + esc(a.action || "") + ' <span class="risk-badge ' + riskClass(risk) + '">' + esc(risk) + '</span></h3>';
+          html += '<p><strong>Repo:</strong> ' + esc(a.repo || "") + ' &middot; <strong>Effort:</strong> ' + esc(a.effort || "") + '</p>';
+          if (a.matching_failures && a.matching_failures.length) {
+            html += '<details><summary>Matching Failures</summary>' + tagsHtml(a.matching_failures, "failure") + '</details>';
+          }
+          if (a.matching_gaps && a.matching_gaps.length) {
+            html += '<details><summary>Capability Gaps</summary>' + tagsHtml(a.matching_gaps, "gap") + '</details>';
+          }
+          if (a.guardrails_required && a.guardrails_required.length) {
+            html += '<details><summary>Guardrails Required</summary>' + tagsHtml(a.guardrails_required, "guardrail") + '</details>';
+          }
+          if (a.execution_notes) {
+            html += '<details><summary>Execution Notes</summary><p>' + esc(a.execution_notes) + '</p></details>';
+          }
+          html += '</div>';
+        });
+
+        // Compound risks
+        if (compound.length) {
+          html += '<h2>Compound Risks</h2>';
+          compound.forEach(function (c) {
+            var sev = (c.compound_severity || "medium").toLowerCase();
+            html += '<div class="risk-card">';
+            html += '<h3><span class="severity-tag ' + severityClass(sev) + '">' + esc(sev) + '</span></h3>';
+            html += '<p><strong>Meta Risk:</strong> ' + esc(c.meta_risk || "") + '</p>';
+            html += '<p><strong>Agent Failure:</strong> ' + esc(c.agent_failure || "") + '</p>';
+            html += '<p>' + esc(c.explanation || "") + '</p>';
+            html += '<p><strong>Mitigation:</strong> ' + esc(c.mitigation || "") + '</p>';
+            html += '</div>';
+          });
+        }
+
+        // Blocked actions
+        if (blocked.length) {
+          html += '<h2>Blocked Actions</h2>';
+          blocked.forEach(function (b) {
+            html += '<div class="blocked-card">';
+            html += '<h3>' + esc(b.action || "") + '</h3>';
+            html += '<p><strong>Blocking Gap:</strong> ' + esc(b.blocking_gap || "") + '</p>';
+            html += '<p><strong>Resolution:</strong> ' + esc(b.resolution || "") + '</p>';
+            if (b.decomposition) {
+              html += '<p><strong>Decomposition:</strong> ' + esc(b.decomposition) + '</p>';
+            }
+            html += '</div>';
+          });
+        }
+
+        // Tension points
+        if (tensions.length) {
+          html += '<h2>Tension Points</h2>';
+          tensions.forEach(function (t) {
+            html += '<div class="tension-card">';
+            html += '<div class="tension-cols">';
+            html += '<div class="tension-side guardrail-side"><strong>Guardrail:</strong> ' + esc(t.guardrail || "") + '</div>';
+            html += '<div class="tension-side action-side"><strong>Action:</strong> ' + esc(t.constrained_action || "") + '</div>';
+            html += '</div>';
+            html += '<p style="margin-top:10px;"><strong>Tension:</strong> ' + esc(t.tension || "") + '</p>';
+            html += '<p><strong>Resolution:</strong> ' + esc(t.resolution || "") + '</p>';
+            html += '</div>';
+          });
+        }
+
+        // Execution sequence
+        if (sequence.length) {
+          html += '<h2>Execution Sequence</h2>';
+          sequence.forEach(function (s) {
+            html += '<div class="phase-card">';
+            html += '<h3>Phase ' + (s.phase || "") + '</h3>';
+            if (s.actions && s.actions.length) {
+              html += '<p><strong>Actions:</strong> ' + s.actions.map(esc).join(", ") + '</p>';
+            }
+            if (s.preconditions) {
+              html += '<p><strong>Preconditions:</strong> ' + esc(s.preconditions) + '</p>';
+            }
+            if (s.expected_stability_impact) {
+              html += '<p><strong>Expected Stability Impact:</strong> ' + esc(s.expected_stability_impact) + '</p>';
+            }
+            html += '</div>';
+          });
+        }
+
+        // Next review trigger
+        html += '<h2>Next Review Trigger</h2>';
+        html += '<p>' + esc(trigger) + '</p>';
+
+        document.getElementById("fusion-container").innerHTML = html;
+      }
+    })();
+    </script>
+  </body>
+</html>

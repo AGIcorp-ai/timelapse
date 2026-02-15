@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Critique</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .verdict-header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .competence-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .competence-badge.effective { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+      .competence-badge.mixed { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+      .competence-badge.ineffective { background: #fde8e8; color: #b91c1c; border: 1px solid #fca5a5; }
+      .confidence-bar {
+        width: 120px;
+        height: 10px;
+        background: var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .confidence-fill {
+        height: 100%;
+        border-radius: 6px;
+        background: var(--accent);
+      }
+      .score-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .score-bar .score-label {
+        width: 180px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+      .score-bar .score-track {
+        flex: 1;
+        height: 14px;
+        background: var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .score-fill {
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.4s ease;
+      }
+      .score-fill.high { background: #059669; }
+      .score-fill.mid { background: #d97706; }
+      .score-fill.low { background: #dc2626; }
+      .score-bar .score-value {
+        width: 40px;
+        text-align: right;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .failure-list, .gap-list, .guardrail-list { list-style: none; padding: 0; margin: 0; }
+      .failure-item, .gap-item, .guardrail-item {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+        counter-increment: item;
+      }
+      .failure-item::before {
+        content: "#" counter(item);
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 700;
+        color: var(--accent-2);
+        font-size: 0.82rem;
+      }
+      .failure-item h3, .gap-item h3, .guardrail-item h3 { margin: 6px 0 8px; font-size: 1rem; }
+      .failure-item p, .gap-item p, .guardrail-item p { margin: 0 0 6px; color: var(--muted); font-size: 0.92rem; }
+      .severity-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .severity-low { background: #d1fae5; color: #065f46; }
+      .severity-medium { background: #fef3c7; color: #92400e; }
+      .severity-high { background: #fde8e8; color: #b91c1c; }
+      .severity-critical { background: #7f1d1d; color: #fecaca; }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .back-link:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel" style="margin-top: 32px;">
+        <a class="back-link" href="index.html">&larr; Back to Dashboard</a>
+        <h1>Agent Critique</h1>
+        <p style="color: var(--muted);">Same data, inverted lens — evaluating the coding agent's failures, capability gaps, and recommended guardrails.</p>
+
+        <div id="verdict-container">
+          <p style="color: var(--muted);">Loading verdict data...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built for legible engineering analytics. Source:
+        <a href="https://github.com/AGIcorp-ai/timelapse">AGIcorp-ai/timelapse</a>
+      </p>
+    </footer>
+
+    <script>
+    (function () {
+      fetch("agent_critique_verdict.json")
+        .then(function (r) { return r.json(); })
+        .then(render)
+        .catch(function (err) {
+          document.getElementById("verdict-container").innerHTML =
+            "<p>Failed to load verdict: " + err.message + "</p>";
+        });
+
+      function esc(s) {
+        var d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function scoreClass(v) {
+        if (v >= 0.7) return "high";
+        if (v >= 0.4) return "mid";
+        return "low";
+      }
+
+      function render(data) {
+        var av = data.agent_verdict || {};
+        var failures = data.agent_failures || [];
+        var gaps = data.capability_gaps || [];
+        var guardrails = data.recommended_guardrails || [];
+        var scores = data.stability_scores || {};
+        var trigger = data.next_review_trigger || "";
+
+        var competence = av.overall_competence || "unknown";
+        var conf = (av.confidence || 0);
+        var confPct = Math.round(conf * 100);
+
+        var html = "";
+
+        // Verdict header
+        html += '<div class="verdict-header">';
+        html += '<span class="competence-badge ' + esc(competence) + '">' + esc(competence) + '</span>';
+        html += '<span style="font-size:0.88rem;color:var(--muted);">Confidence: ' + confPct + '%</span>';
+        html += '<div class="confidence-bar"><div class="confidence-fill" style="width:' + confPct + '%;"></div></div>';
+        html += '</div>';
+
+        // Primary failure mode
+        html += '<h2>Primary Failure Mode</h2>';
+        html += '<p>' + esc(av.primary_failure_mode || "") + '</p>';
+
+        // Highest leverage improvement
+        html += '<h2>Highest-Leverage Improvement</h2>';
+        html += '<p style="font-weight:500;">' + esc(av.highest_leverage_improvement || "") + '</p>';
+
+        // Stability scores
+        html += '<h2>Stability Scores</h2>';
+        var dims = [
+          ["Intent Interpretation", scores.intent_interpretation],
+          ["Code Stability", scores.code_stability],
+          ["Architectural Coherence", scores.architectural_coherence],
+          ["Objective Alignment", scores.objective_alignment],
+          ["Clarification Seeking", scores.clarification_seeking]
+        ];
+        dims.forEach(function (d) {
+          var val = d[1] || 0;
+          var pct = Math.round(val * 100);
+          html += '<div class="score-bar">';
+          html += '<span class="score-label">' + esc(d[0]) + '</span>';
+          html += '<div class="score-track"><div class="score-fill ' + scoreClass(val) + '" style="width:' + pct + '%;"></div></div>';
+          html += '<span class="score-value">' + val.toFixed(2) + '</span>';
+          html += '</div>';
+        });
+
+        // Agent failures
+        html += '<h2>Agent Failures</h2>';
+        html += '<ol class="failure-list" style="counter-reset:item;">';
+        failures.forEach(function (f) {
+          html += '<li class="failure-item">';
+          html += '<h3>' + esc(f.pattern || "") + '</h3>';
+          html += '<p><strong>Evidence:</strong> ' + esc(f.evidence || "") + '</p>';
+          html += '<p><strong>Impact:</strong> ' + esc(f.impact || "") + '</p>';
+          html += '<p><strong>Counterfactual:</strong> ' + esc(f.counterfactual || "") + '</p>';
+          html += '</li>';
+        });
+        html += '</ol>';
+
+        // Capability gaps
+        html += '<h2>Capability Gaps</h2>';
+        html += '<ul class="gap-list">';
+        gaps.forEach(function (g) {
+          var sev = (g.severity || "medium").toLowerCase();
+          html += '<li class="gap-item">';
+          html += '<h3>' + esc(g.gap || "") + '</h3>';
+          html += '<span class="severity-tag severity-' + sev + '">' + esc(g.severity || "") + '</span>';
+          html += '<p style="margin-top:8px;"><strong>Workaround:</strong> ' + esc(g.workaround || "") + '</p>';
+          html += '</li>';
+        });
+        html += '</ul>';
+
+        // Recommended guardrails
+        html += '<h2>Recommended Guardrails</h2>';
+        html += '<ul class="guardrail-list">';
+        guardrails.forEach(function (gr) {
+          html += '<li class="guardrail-item">';
+          html += '<h3>' + esc(gr.guardrail || "") + '</h3>';
+          html += '<p><strong>Enforcement:</strong> ' + esc(gr.enforcement || "") + '</p>';
+          html += '<p><strong>Expected Impact:</strong> ' + esc(gr.expected_impact || "") + '</p>';
+          html += '</li>';
+        });
+        html += '</ul>';
+
+        // Next review trigger
+        html += '<h2>Next Review Trigger</h2>';
+        html += '<p>' + esc(trigger) + '</p>';
+
+        document.getElementById("verdict-container").innerHTML = html;
+      }
+    })();
+    </script>
+  </body>
+</html>
