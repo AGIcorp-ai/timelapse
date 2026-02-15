@@ -13,6 +13,7 @@
   - `build_timeline.py` (cross-repo commit-to-prompt timeline markdown)
   - `build_transcript.py` (per-session transcript markdown with interleaved commit markers)
   - `objective_timeline.py` (objective-level synthesis outputs for docs/pages)
+  - `meta_analysis.py` (GPT-5.2 meta-analysis: cross-report synthesis + verdict)
 - Shared library code lives in `lib/` (`config.py`, `data_loaders.py`, `metrics.py`, `symbol_extractor.py`).
 - Tests live in `tests/` and mirror library behavior (`test_metrics.py`, `test_symbol_extractor.py`, etc.).
 - Static showcase site for GitHub Pages is under `docs/`.
@@ -27,6 +28,7 @@
 - `python build_timeline.py`: generate `timeline.md` by matching user prompts to commits across configured repos.
 - `python build_transcript.py`: generate `transcripts/` session narratives with commit markers.
 - `python objective_timeline.py`: refresh objective timeline markdown/JSON consumed by `docs/`.
+- `python meta_analysis.py`: GPT-5.2 meta-analysis of all derived reports (synthesis + verdict).
 - `python -m unittest discover -s tests -v`: run all tests.
 
 ## Coding Style & Naming Conventions

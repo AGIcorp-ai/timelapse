@@ -88,6 +88,12 @@ Run divergence review:
 python time_machine_review.py
 ```
 
+Run GPT-5.2 meta-analysis (senior-engineer review of all reports):
+```bash
+python meta_analysis.py           # full meta-analysis
+python meta_analysis.py --dry-run # check token budget first
+```
+
 ## Decision Policy for Prompting Quality
 Use these signals only with multi-turn context:
 - `short_without_context`
@@ -105,3 +111,6 @@ Do not use prompt length alone as a negative signal.
 - `reports/rlm/data_volume.json`
 - `reports/rlm/rlm_head_engineer.md`
 - `reports/rlm/rlm_head_engineer_prompt.txt`
+- `reports/meta/meta_analysis.md`
+- `reports/meta/meta_verdict.json`
+- `reports/meta/token_usage.json`

@@ -1,0 +1,87 @@
+{
+  "meta_verdict": {
+    "trajectory": "diverging",
+    "confidence": 0.74,
+    "primary_risk": "High-throughput, low-gating prompt\u2192commit flow plus underspecified multi-turn prompts is driving coupled churn in core agent/UI surfaces, reducing determinism/auditability and increasing architecture drift away from replayable, ML-ready traces.",
+    "highest_leverage_action": "Introduce enforced prompt\u2192commit gating (template + CI checks for deterministic invariants + prompt-ID/acceptance linkage) so ambiguous intent cannot merge without explicit success criteria and replayable verification."
+  },
+  "priority_actions": [
+    {
+      "rank": 1,
+      "action": "Implement deterministic external-source snapshotting with provenance (rsync + manifest of hashes/mtimes) for ~/.claude/projects, ~/.codex/sessions, ~/4D-bot, and ~/Music/SICM into repo-local storage, and make it a required step in the pipeline.",
+      "rationale": "The primary goal explicitly depends on auditable collation of external local sources; without deterministic ingestion + manifest, completeness/provenance cannot be proven, making replayability and trace audits unreliable.",
+      "effort": "medium",
+      "source_reports": [
+        "Objective inference: inferred_primary_goal + evidence (deterministic/auditable behavior requirement)",
+        "Synthesis analysis: Blind Spots #1 (ingestion completeness & provenance), Priority Stack #1",
+        "Synthesis analysis: Diverging dimension (external-source collation not implemented deterministically)"
+      ]
+    },
+    {
+      "rank": 2,
+      "action": "Add CI gating that (a) requires prompt-ID linkage, (b) runs deterministic invariant checks (world-seed fixtures/canonical output comparisons), and (c) records a one-line acceptance result artifact before merge.",
+      "rationale": "Median prompt\u2192commit lag (~3 minutes) plus missing acceptance criteria causes accidental changes and weak auditability; automated deterministic checks convert existing determinism work into continuous enforcement and prevent silent behavior drift.",
+      "effort": "medium",
+      "source_reports": [
+        "Objective inference: execution_failure #3 (too-fast prompt\u2192commit without gating) and #4 (insufficient deterministic invariants)",
+        "Synthesis analysis: Priority Stack #2 (CI gating), Operator Effectiveness (fast lag correlates with large commits from vague prompts)"
+      ]
+    },
+    {
+      "rank": 3,
+      "action": "Enforce a minimal prompt template for multi-turn work (objective, explicit success criteria, target files/components, required artifacts/seed/state) and block merges/commits that omit it (hooks/PR checklist).",
+      "rationale": "Lazy prompts (~0.087 vs target 0.03) dominated by missing explicit target and success criteria force implementers to guess intent, driving churn and misalignment; templating is the most direct lever on prompt\u2192implementation alignment.",
+      "effort": "low",
+      "source_reports": [
+        "Objective inference: execution_failure #1 (ambiguous prompts lacking success criteria)",
+        "Synthesis analysis: Consistent signals (lazy prompt ratio) + Priority Stack #3",
+        "Objective inference: evidence (lazy_prompt_breakdown dominated by missing target/success criteria)"
+      ]
+    },
+    {
+      "rank": 4,
+      "action": "Stabilize top churn surfaces by introducing explicit interface contracts and small adapter layers for agent/UI boundaries (AGENTS.md guidance, arena_v0/cli.py, arena_v0/ui_server.py, canvas/*), backed by integration tests that validate those contracts.",
+      "rationale": "Churn is concentrated in instruction and runtime surfaces, increasing coupling and regression risk; contracts + adapter tests reduce simultaneous edits and improve replayability across core interaction points.",
+      "effort": "high",
+      "source_reports": [
+        "Objective inference: execution_failure #2 (excessive churn in agent/UI surface)",
+        "Synthesis analysis: Churn hotspots and Diverging dimension (coupling risk), Priority Stack #4"
+      ]
+    },
+    {
+      "rank": 5,
+      "action": "Fix analytics integrity: normalize window definitions, reconcile commit counting rules, repair objective_timeline corruption, and instrument corpus freshness (source sync timestamps) so KPIs are comparable and trend inference is reliable.",
+      "rationale": "Contradictory windows/commit counts and corrupted timeline rows weaken management-by-metrics and can mask whether process changes are working; missing freshness instrumentation makes a stated KPI non-measurable.",
+      "effort": "medium",
+      "source_reports": [
+        "Synthesis analysis: Conflicting signals/anomalies #1-#4 and #7",
+        "Synthesis analysis: Priority Stack #5"
+      ]
+    },
+    {
+      "rank": 6,
+      "action": "Increase commit/diff coverage in corpus artifacts: ingest and summarize diffs/messages for all in-window commits (or a deterministic stratified sample) instead of only 3 commits, and link them to prompts.",
+      "rationale": "The objective is to extract concrete solutions from conversation + code + commits; under-sampling commit diffs undermines synthesis quality and makes trace/audit narratives incomplete.",
+      "effort": "medium",
+      "source_reports": [
+        "Synthesis analysis: Blind Spot #6 (commit corpus under-sampling) and anomaly #5 (commits_included=3)",
+        "Synthesis analysis: Priority Stack #6"
+      ]
+    }
+  ],
+  "blind_spots": [
+    "No deterministic provenance for external-source ingestion (missing manifests, hashes, mtimes, rsync exit codes, and change logs), so collation completeness cannot be audited.",
+    "No CI/test execution telemetry (per-commit pass/fail, flakes, deterministic-run diffs), despite determinism being a top intended outcome.",
+    "No outcome-level runtime telemetry (end-to-end run success, performance, UI responsiveness, artifact quality), so prompt\u2192code\u2192outcome alignment cannot be measured.",
+    "No cross-repo dependency/interface map across SICM, 4D-bot, and ascii-engine, increasing the risk of silent contract drift.",
+    "Commit/diff data is severely underrepresented in artifacts (only 3 commits included) relative to 115\u2013119 commits in-window, biasing synthesis toward transcripts.",
+    "KPI comparability is compromised by window/commit-count inconsistencies and a corrupted objective_timeline row, breaking week-over-week operator learning analysis.",
+    "Binary artifact churn and its impact on determinism/repo health is not analyzed despite signals that binary numstat data exists."
+  ],
+  "operator_protocol": {
+    "weakness": "Multi-turn prompts frequently omit explicit target scope and measurable success criteria, and the ultra-fast prompt\u2192commit cadence bypasses acceptance checking, leading to high-churn, coupled edits that are hard to audit and replay deterministically.",
+    "recommended_template": "PROMPT TEMPLATE (required for merge)\n1) Objective: <one sentence>\n2) Target scope: <files/components/APIs>\n3) Success criteria (verifiable):\n   - [ ] <check 1: deterministic test/invariant + expected result>\n   - [ ] <check 2: user-visible behavior + expected result>\n4) Determinism requirements: <seed/state inputs, canonical outputs, replay steps>\n5) Artifacts to attach: <logs, manifests, snapshots, screenshots/gifs if UI>\n6) Non-goals / constraints: <what must NOT change>\n7) Prompt-ID: <id>\nCommit/PR footer:\nPrompt-ID: <id>\nAcceptance: <one-line result + command(s) run>\nInvariants: <list of invariant checks executed>",
+    "expected_impact": "Reduces lazy prompt ratio toward the 0.03 target, improves prompt\u2192implementation alignment, and increases deterministic auditability by ensuring every change has explicit scope, acceptance checks, and replayable invariant evidence before merge."
+  },
+  "next_review_trigger": "Run the next review after either (a) 7 days, or (b) the first 10 PRs merged with the new gating, whichever comes first; trigger immediately if lazy prompt ratio remains >0.06 or if any deterministic invariant check fails on main."
+}

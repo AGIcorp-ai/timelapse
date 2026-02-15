@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meta-Analysis Verdict</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .verdict-header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .badge.diverging { background: #fde8e8; color: #b91c1c; border: 1px solid #fca5a5; }
+      .badge.converging { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+      .badge.stalled { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+      .confidence-bar {
+        width: 120px;
+        height: 10px;
+        background: var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .confidence-fill {
+        height: 100%;
+        border-radius: 6px;
+        background: var(--accent);
+      }
+      .action-list { list-style: none; padding: 0; margin: 0; counter-reset: action; }
+      .action-item {
+        counter-increment: action;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+      }
+      .action-item::before {
+        content: "#" counter(action);
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 700;
+        color: var(--accent-2);
+        font-size: 0.82rem;
+      }
+      .action-item h3 { margin: 6px 0 8px; font-size: 1rem; }
+      .action-item p { margin: 0 0 6px; color: var(--muted); font-size: 0.92rem; }
+      .effort-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .effort-low { background: #d1fae5; color: #065f46; }
+      .effort-medium { background: #fef3c7; color: #92400e; }
+      .effort-high { background: #fde8e8; color: #b91c1c; }
+      .source-list { font-size: 0.82rem; color: var(--muted); margin-top: 8px; }
+      .source-list li { margin-bottom: 2px; }
+      .blind-spot-list li { margin-bottom: 8px; color: var(--muted); }
+      .protocol-box {
+        background: #162027;
+        color: #e8f1f7;
+        padding: 16px;
+        border-radius: 12px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+      .back-link {
+        display: inline-block;
+        margin-bottom: 16px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .back-link:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel" style="margin-top: 32px;">
+        <a class="back-link" href="index.html">&larr; Back to Dashboard</a>
+        <h1>Meta-Analysis Verdict</h1>
+        <p style="color: var(--muted);">GPT-5.2 senior-engineer review of all derived reports.</p>
+
+        <div id="verdict-container">
+          <p style="color: var(--muted);">Loading verdict data...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built for legible engineering analytics. Source:
+        <a href="https://github.com/AGIcorp-ai/timelapse">AGIcorp-ai/timelapse</a>
+      </p>
+    </footer>
+
+    <script>
+    (function () {
+      fetch("meta_verdict.json")
+        .then(function (r) { return r.json(); })
+        .then(render)
+        .catch(function (err) {
+          document.getElementById("verdict-container").innerHTML =
+            "<p>Failed to load verdict: " + err.message + "</p>";
+        });
+
+      function esc(s) {
+        var d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function render(data) {
+        var v = data.meta_verdict || {};
+        var actions = data.priority_actions || [];
+        var blindSpots = data.blind_spots || [];
+        var protocol = data.operator_protocol || {};
+        var trigger = data.next_review_trigger || "";
+
+        var trajectory = v.trajectory || "unknown";
+        var conf = (v.confidence || 0);
+        var confPct = Math.round(conf * 100);
+
+        var html = "";
+
+        // Verdict header
+        html += '<div class="verdict-header">';
+        html += '<span class="badge ' + esc(trajectory) + '">' + esc(trajectory) + '</span>';
+        html += '<span style="font-size:0.88rem;color:var(--muted);">Confidence: ' + confPct + '%</span>';
+        html += '<div class="confidence-bar"><div class="confidence-fill" style="width:' + confPct + '%;"></div></div>';
+        html += '</div>';
+
+        // Primary risk
+        html += '<h2>Primary Risk</h2>';
+        html += '<p>' + esc(v.primary_risk || "") + '</p>';
+
+        // Highest leverage
+        html += '<h2>Highest-Leverage Action</h2>';
+        html += '<p style="font-weight:500;">' + esc(v.highest_leverage_action || "") + '</p>';
+
+        // Priority actions
+        html += '<h2>Priority Actions</h2>';
+        html += '<ol class="action-list">';
+        actions.forEach(function (a) {
+          var effort = (a.effort || "medium").toLowerCase();
+          html += '<li class="action-item">';
+          html += '<h3>' + esc(a.action || "") + '</h3>';
+          html += '<p>' + esc(a.rationale || "") + '</p>';
+          html += '<span class="effort-tag effort-' + effort + '">' + esc(a.effort || "") + '</span>';
+          if (a.source_reports && a.source_reports.length) {
+            html += '<ul class="source-list">';
+            a.source_reports.forEach(function (s) {
+              html += '<li>' + esc(s) + '</li>';
+            });
+            html += '</ul>';
+          }
+          html += '</li>';
+        });
+        html += '</ol>';
+
+        // Blind spots
+        html += '<h2>Blind Spots</h2>';
+        html += '<ol class="blind-spot-list">';
+        blindSpots.forEach(function (b) {
+          html += '<li>' + esc(b) + '</li>';
+        });
+        html += '</ol>';
+
+        // Operator protocol
+        html += '<h2>Operator Protocol</h2>';
+        html += '<h3 style="font-size:0.95rem;">Weakness</h3>';
+        html += '<p>' + esc(protocol.weakness || "") + '</p>';
+        html += '<h3 style="font-size:0.95rem;">Recommended Template</h3>';
+        html += '<div class="protocol-box">' + esc(protocol.recommended_template || "") + '</div>';
+        html += '<h3 style="font-size:0.95rem;margin-top:12px;">Expected Impact</h3>';
+        html += '<p>' + esc(protocol.expected_impact || "") + '</p>';
+
+        // Next review trigger
+        html += '<h2>Next Review Trigger</h2>';
+        html += '<p>' + esc(trigger) + '</p>';
+
+        document.getElementById("verdict-container").innerHTML = html;
+      }
+    })();
+    </script>
+  </body>
+</html>
