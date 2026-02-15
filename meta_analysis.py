@@ -96,69 +96,84 @@ def build_context_payload(reports_dir: Path) -> dict:
 # ---------------------------------------------------------------------------
 
 def build_synthesis_prompt(context: dict, objective: str, rlm_text: str) -> str:
-    """Call 1: cross-report narrative review."""
+    """Call 1: senior engineer review of the actual project work."""
     context_json = json.dumps(context, indent=2)
     return (
-        "You are a senior staff engineer conducting a meta-analysis of a software "
-        "development analytics pipeline. Your job is to synthesize findings across "
-        "multiple automated reports and produce a unified assessment.\n\n"
+        "You are a senior staff engineer reviewing the engineering output of "
+        "three related projects (4D-bot, SICM, ascii-engine). The data below "
+        "comes from automated analyzers -- use it as evidence, not as the subject "
+        "of your review. Your job is to assess the actual software being built "
+        "and recommend what to build, fix, or ship next.\n\n"
         f"Primary objective:\n{objective}\n\n"
-        f"RLM head-engineer analysis (markdown):\n{rlm_text}\n\n"
-        f"Structured report data:\n{context_json}\n\n"
+        f"Prior engineering review (markdown):\n{rlm_text}\n\n"
+        f"Structured evidence:\n{context_json}\n\n"
         "Produce a thorough markdown report with these exact sections:\n\n"
-        "## 1. Cross-Report Consistency Check\n"
-        "Do the reports contradict each other? Flag any conflicting signals.\n\n"
-        "## 2. Trajectory Assessment\n"
-        "Is this project converging toward or diverging from its stated goal? "
-        "Cite specific metrics and trend directions.\n\n"
-        "## 3. Blind Spots\n"
-        "What important dimensions are NOT being analyzed by the current pipeline? "
-        "What data exists but is being ignored?\n\n"
-        "## 4. Priority Stack\n"
-        "Deduplicated list of max 7 priorities, each citing which source report(s) "
-        "surfaced it. Rank by impact on the primary objective.\n\n"
-        "## 5. Operator Effectiveness\n"
-        "Correlate prompt quality signals with goal achievement. Is the operator "
-        "getting better or worse over time?\n\n"
-        "## 6. 7-Day Focus\n"
-        "Exactly 3 concrete commands, scripts, or code changes to execute in the "
-        "next 7 days. Be specific enough to copy-paste.\n"
+        "## 1. Project Health\n"
+        "What is the current state of each project (4D-bot, SICM, ascii-engine)? "
+        "Where is momentum concentrated? What has stalled? Use commit velocity, "
+        "churn patterns, and rework ratio as evidence.\n\n"
+        "## 2. Architecture & Technical Debt\n"
+        "Based on the high-churn files and commit patterns, where is the codebase "
+        "accumulating accidental complexity? What refactors or design changes "
+        "would reduce future rework?\n\n"
+        "## 3. Goal Convergence\n"
+        "Is the recent work actually advancing the stated objective, or is effort "
+        "being spent on tangential work? Cite specific commits/files as evidence.\n\n"
+        "## 4. Highest-Impact Work\n"
+        "Ranked list of max 7 engineering tasks. Each must describe a concrete "
+        "change to the project code/architecture (not to the analytics pipeline). "
+        "Rank by impact on the primary objective.\n\n"
+        "## 5. Risk Register\n"
+        "What could go wrong in the next 2 weeks? Identify coupling risks, "
+        "incomplete features, and areas where the codebase is fragile.\n\n"
+        "## 6. 7-Day Sprint\n"
+        "Exactly 3 concrete engineering tasks to execute in the next 7 days. "
+        "Each should specify which repo, which files, and what the change is. "
+        "Be specific enough to hand to another engineer.\n"
     )
 
 
 def build_verdict_prompt(synthesis_md: str, objective_inference: dict) -> str:
-    """Call 2: machine-readable action plan from synthesis."""
+    """Call 2: machine-readable engineering action plan."""
     inference_json = json.dumps(objective_inference, indent=2)
     return (
-        "You are a machine-output formatter. Given the synthesis analysis below "
+        "You are a machine-output formatter. Given the engineering review below "
         "and the objective inference data, produce ONLY valid JSON (no markdown, "
         "no explanation) with this exact schema:\n\n"
         "{\n"
-        '  "meta_verdict": {\n'
+        '  "verdict": {\n'
         '    "trajectory": "converging | diverging | stalled",\n'
         '    "confidence": 0.0,\n'
-        '    "primary_risk": "string",\n'
-        '    "highest_leverage_action": "string"\n'
+        '    "primary_risk": "one-sentence engineering risk",\n'
+        '    "highest_leverage_action": "one-sentence, specific to project code"\n'
         "  },\n"
         '  "priority_actions": [\n'
         "    {\n"
         '      "rank": 1,\n'
-        '      "action": "string",\n'
-        '      "rationale": "string",\n'
-        '      "effort": "low | medium | high",\n'
-        '      "source_reports": ["string"]\n'
+        '      "action": "concrete code/architecture change",\n'
+        '      "repo": "which repo",\n'
+        '      "rationale": "why this moves the needle",\n'
+        '      "effort": "low | medium | high"\n'
         "    }\n"
         "  ],\n"
-        '  "blind_spots": ["string"],\n'
-        '  "operator_protocol": {\n'
-        '    "weakness": "string",\n'
-        '    "recommended_template": "string",\n'
-        '    "expected_impact": "string"\n'
-        "  },\n"
-        '  "next_review_trigger": "string"\n'
+        '  "tech_debt": [\n'
+        "    {\n"
+        '      "location": "repo/file or module",\n'
+        '      "issue": "what is wrong",\n'
+        '      "fix": "what to do"\n'
+        "    }\n"
+        "  ],\n"
+        '  "risks": [\n'
+        "    {\n"
+        '      "risk": "what could go wrong",\n'
+        '      "likelihood": "low | medium | high",\n'
+        '      "mitigation": "what to do about it"\n'
+        "    }\n"
+        "  ],\n"
+        '  "next_review_trigger": "condition that should prompt the next review"\n'
         "}\n\n"
         f"Objective inference data:\n{inference_json}\n\n"
-        f"Synthesis analysis:\n{synthesis_md}\n"
+        f"Engineering review:\n{synthesis_md}\n"
     )
 
 

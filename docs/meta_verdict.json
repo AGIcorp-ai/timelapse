@@ -1,87 +1,103 @@
 {
-  "meta_verdict": {
+  "verdict": {
     "trajectory": "diverging",
-    "confidence": 0.74,
-    "primary_risk": "High-throughput, low-gating prompt\u2192commit flow plus underspecified multi-turn prompts is driving coupled churn in core agent/UI surfaces, reducing determinism/auditability and increasing architecture drift away from replayable, ML-ready traces.",
-    "highest_leverage_action": "Introduce enforced prompt\u2192commit gating (template + CI checks for deterministic invariants + prompt-ID/acceptance linkage) so ambiguous intent cannot merge without explicit success criteria and replayable verification."
+    "confidence": 0.82,
+    "primary_risk": "Rapid, underspecified prompt-to-commit changes are driving coupled churn in core agent/UI surfaces, risking loss of determinism and auditability across 4D-bot Arena and SICM evolution.",
+    "highest_leverage_action": "In 4D-bot, extract all Arena state mutation out of arena_v0/ui_server.py into arena_v0/services/world_service.py and lock behavior with a deterministic golden tick test."
   },
   "priority_actions": [
     {
       "rank": 1,
-      "action": "Implement deterministic external-source snapshotting with provenance (rsync + manifest of hashes/mtimes) for ~/.claude/projects, ~/.codex/sessions, ~/4D-bot, and ~/Music/SICM into repo-local storage, and make it a required step in the pipeline.",
-      "rationale": "The primary goal explicitly depends on auditable collation of external local sources; without deterministic ingestion + manifest, completeness/provenance cannot be proven, making replayability and trace audits unreliable.",
-      "effort": "medium",
-      "source_reports": [
-        "Objective inference: inferred_primary_goal + evidence (deterministic/auditable behavior requirement)",
-        "Synthesis analysis: Blind Spots #1 (ingestion completeness & provenance), Priority Stack #1",
-        "Synthesis analysis: Diverging dimension (external-source collation not implemented deterministically)"
-      ]
+      "action": "Create arena_v0/services/world_service.py as the sole facade for world init/tick/mutation and refactor arena_v0/ui_server.py to be request-parse -> WorldService call -> response only; prohibit direct world mutation from ui_server.py.",
+      "repo": "4D-bot",
+      "rationale": "This breaks the highest-churn coupling point (UI endpoints + domain logic) so Arena mechanics can stabilize behind a contract and regressions become testable and reviewable.",
+      "effort": "medium"
     },
     {
       "rank": 2,
-      "action": "Add CI gating that (a) requires prompt-ID linkage, (b) runs deterministic invariant checks (world-seed fixtures/canonical output comparisons), and (c) records a one-line acceptance result artifact before merge.",
-      "rationale": "Median prompt\u2192commit lag (~3 minutes) plus missing acceptance criteria causes accidental changes and weak auditability; automated deterministic checks convert existing determinism work into continuous enforcement and prevent silent behavior drift.",
-      "effort": "medium",
-      "source_reports": [
-        "Objective inference: execution_failure #3 (too-fast prompt\u2192commit without gating) and #4 (insufficient deterministic invariants)",
-        "Synthesis analysis: Priority Stack #2 (CI gating), Operator Effectiveness (fast lag correlates with large commits from vague prompts)"
-      ]
+      "action": "Add tests/test_arena_determinism.py that seeds RNG, runs a minimal world for a fixed number of ticks, and asserts a stable snapshot hash and invariants (counts/totals/realm states), updating arena_v0/world.py or arena_v0/engine.py only as needed to make ticking deterministic.",
+      "repo": "4D-bot",
+      "rationale": "A deterministic end-to-end invariant is the fastest way to preserve replayability while refactoring churn hotspots and to prevent silent behavior drift.",
+      "effort": "medium"
     },
     {
       "rank": 3,
-      "action": "Enforce a minimal prompt template for multi-turn work (objective, explicit success criteria, target files/components, required artifacts/seed/state) and block merges/commits that omit it (hooks/PR checklist).",
-      "rationale": "Lazy prompts (~0.087 vs target 0.03) dominated by missing explicit target and success criteria force implementers to guess intent, driving churn and misalignment; templating is the most direct lever on prompt\u2192implementation alignment.",
-      "effort": "low",
-      "source_reports": [
-        "Objective inference: execution_failure #1 (ambiguous prompts lacking success criteria)",
-        "Synthesis analysis: Consistent signals (lazy prompt ratio) + Priority Stack #3",
-        "Objective inference: evidence (lazy_prompt_breakdown dominated by missing target/success criteria)"
-      ]
+      "action": "Introduce canvas/src/lib/eventLog.ts (RunHeader/Event/Observation/Action types + helpers) and modify canvas/src/lib/worldSeedRunner.ts to emit a deterministic event log artifact; extend canvas/src/lib/worldSeedTrajectory.test.ts to assert stable event counts/types for fixtures.",
+      "repo": "SICM",
+      "rationale": "Establishes a canonical replay spine so WorldSeed/Genesis/world-sim efforts converge into comparable, auditable traces instead of accumulating incompatible subsystems.",
+      "effort": "high"
     },
     {
       "rank": 4,
-      "action": "Stabilize top churn surfaces by introducing explicit interface contracts and small adapter layers for agent/UI boundaries (AGENTS.md guidance, arena_v0/cli.py, arena_v0/ui_server.py, canvas/*), backed by integration tests that validate those contracts.",
-      "rationale": "Churn is concentrated in instruction and runtime surfaces, increasing coupling and regression risk; contracts + adapter tests reduce simultaneous edits and improve replayability across core interaction points.",
-      "effort": "high",
-      "source_reports": [
-        "Objective inference: execution_failure #2 (excessive churn in agent/UI surface)",
-        "Synthesis analysis: Churn hotspots and Diverging dimension (coupling risk), Priority Stack #4"
-      ]
-    },
-    {
-      "rank": 5,
-      "action": "Fix analytics integrity: normalize window definitions, reconcile commit counting rules, repair objective_timeline corruption, and instrument corpus freshness (source sync timestamps) so KPIs are comparable and trend inference is reliable.",
-      "rationale": "Contradictory windows/commit counts and corrupted timeline rows weaken management-by-metrics and can mask whether process changes are working; missing freshness instrumentation makes a stated KPI non-measurable.",
-      "effort": "medium",
-      "source_reports": [
-        "Synthesis analysis: Conflicting signals/anomalies #1-#4 and #7",
-        "Synthesis analysis: Priority Stack #5"
-      ]
-    },
-    {
-      "rank": 6,
-      "action": "Increase commit/diff coverage in corpus artifacts: ingest and summarize diffs/messages for all in-window commits (or a deterministic stratified sample) instead of only 3 commits, and link them to prompts.",
-      "rationale": "The objective is to extract concrete solutions from conversation + code + commits; under-sampling commit diffs undermines synthesis quality and makes trace/audit narratives incomplete.",
-      "effort": "medium",
-      "source_reports": [
-        "Synthesis analysis: Blind Spot #6 (commit corpus under-sampling) and anomaly #5 (commits_included=3)",
-        "Synthesis analysis: Priority Stack #6"
-      ]
+      "action": "Add CI gating in both repos: fail PRs unless (a) commit/PR references a prompt ID, (b) a minimal prompt template is present (objective, acceptance criteria, target files, seed/state), and (c) deterministic fixture/invariant tests pass.",
+      "repo": "4D-bot + SICM",
+      "rationale": "Reduces auditability loss from the ~3.2-minute prompt->commit loop by enforcing explicit acceptance and deterministic checks before merge.",
+      "effort": "medium"
     }
   ],
-  "blind_spots": [
-    "No deterministic provenance for external-source ingestion (missing manifests, hashes, mtimes, rsync exit codes, and change logs), so collation completeness cannot be audited.",
-    "No CI/test execution telemetry (per-commit pass/fail, flakes, deterministic-run diffs), despite determinism being a top intended outcome.",
-    "No outcome-level runtime telemetry (end-to-end run success, performance, UI responsiveness, artifact quality), so prompt\u2192code\u2192outcome alignment cannot be measured.",
-    "No cross-repo dependency/interface map across SICM, 4D-bot, and ascii-engine, increasing the risk of silent contract drift.",
-    "Commit/diff data is severely underrepresented in artifacts (only 3 commits included) relative to 115\u2013119 commits in-window, biasing synthesis toward transcripts.",
-    "KPI comparability is compromised by window/commit-count inconsistencies and a corrupted objective_timeline row, breaking week-over-week operator learning analysis.",
-    "Binary artifact churn and its impact on determinism/repo health is not analyzed despite signals that binary numstat data exists."
+  "tech_debt": [
+    {
+      "location": "4D-bot/arena_v0/ui_server.py",
+      "issue": "UI endpoints contain substantial domain logic and direct world mutation, making the API surface a coupled hotspot and increasing regression risk with each feature insertion.",
+      "fix": "Move all state transitions/ticks/LLM-adjacent orchestration into arena_v0/services/world_service.py and keep ui_server.py as a thin adapter layer."
+    },
+    {
+      "location": "4D-bot/arena_v0/world.py + arena_v0/engine.py",
+      "issue": "World ticking and state evolution are not clearly isolated/pure, making deterministic tests and replay hard to guarantee under refactors.",
+      "fix": "Refactor tick/update paths to accept explicit inputs (seed, prior state) and return deterministic outputs; centralize RNG usage behind an injected PRNG."
+    },
+    {
+      "location": "SICM/canvas/src/cli.tsx",
+      "issue": "CLI acts as both composition root and logic container, driving churn and making behavior changes hard to audit or reuse across tools.",
+      "fix": "Extract execution/render/postcard flows into canvas/src/lib modules with explicit IO contracts; keep cli.tsx as wiring only."
+    },
+    {
+      "location": "SICM/canvas/src/lib (WorldSeed + Genesis areas)",
+      "issue": "Multiple world-generation subsystems are evolving without a single canonical event/state log, risking later unification rewrites and fragmented replay tooling.",
+      "fix": "Define a canonical event-log schema (canvas/src/lib/eventLog.ts) and require WorldSeed and Genesis to emit it deterministically."
+    },
+    {
+      "location": "All repos (artifacts/media paths)",
+      "issue": "Binary/media artifacts (GIFs/PDFs) are creeping into version control without strict reproducibility guarantees, complicating review and inflating repo size.",
+      "fix": "Move generated artifacts to a dedicated artifacts directory with a single regeneration command and CI verification; consider Git LFS or external artifact storage for large binaries."
+    },
+    {
+      "location": "SICM/AGENTS.md and SICM/CLAUDE.md",
+      "issue": "High-churn control-plane docs blur authoritative runtime contracts with fast-changing plans, causing hidden coupling and onboarding confusion.",
+      "fix": "Freeze AGENTS.md as a stable interface/invariants contract and move volatile guidance to dated docs/notes/* with non-authoritative status."
+    }
   ],
-  "operator_protocol": {
-    "weakness": "Multi-turn prompts frequently omit explicit target scope and measurable success criteria, and the ultra-fast prompt\u2192commit cadence bypasses acceptance checking, leading to high-churn, coupled edits that are hard to audit and replay deterministically.",
-    "recommended_template": "PROMPT TEMPLATE (required for merge)\n1) Objective: <one sentence>\n2) Target scope: <files/components/APIs>\n3) Success criteria (verifiable):\n   - [ ] <check 1: deterministic test/invariant + expected result>\n   - [ ] <check 2: user-visible behavior + expected result>\n4) Determinism requirements: <seed/state inputs, canonical outputs, replay steps>\n5) Artifacts to attach: <logs, manifests, snapshots, screenshots/gifs if UI>\n6) Non-goals / constraints: <what must NOT change>\n7) Prompt-ID: <id>\nCommit/PR footer:\nPrompt-ID: <id>\nAcceptance: <one-line result + command(s) run>\nInvariants: <list of invariant checks executed>",
-    "expected_impact": "Reduces lazy prompt ratio toward the 0.03 target, improves prompt\u2192implementation alignment, and increases deterministic auditability by ensuring every change has explicit scope, acceptance checks, and replayable invariant evidence before merge."
-  },
-  "next_review_trigger": "Run the next review after either (a) 7 days, or (b) the first 10 PRs merged with the new gating, whichever comes first; trigger immediately if lazy prompt ratio remains >0.06 or if any deterministic invariant check fails on main."
+  "risks": [
+    {
+      "risk": "Arena v0 coupling blow-up where UI changes and mechanic changes require simultaneous edits across ui_server/world/engine, increasing regressions and slowing stabilization.",
+      "likelihood": "high",
+      "mitigation": "Introduce WorldService facade + adapter-only ui_server and add deterministic golden tick integration test to lock behavior."
+    },
+    {
+      "risk": "SICM becomes a multi-engine lab (WorldSeed/Genesis/KAN/world-sim) with no single hardened demo contract, forcing a costly unification rewrite later.",
+      "likelihood": "medium",
+      "mitigation": "Create a canonical event-log/replay schema and require subsystems to emit it; pick one end-to-end demo path and gate merges on its invariants."
+    },
+    {
+      "risk": "Determinism and replay degrade under feature pressure due to vague prompts and extremely short prompt-to-commit cycles.",
+      "likelihood": "high",
+      "mitigation": "Add CI gating requiring prompt template + prompt-ID linkage + deterministic fixtures/invariant checks before merge."
+    },
+    {
+      "risk": "Binary artifacts bloat repositories and make changes non-reviewable/non-reproducible, undermining audit trails.",
+      "likelihood": "medium",
+      "mitigation": "Enforce artifact regeneration scripts and CI verification; isolate artifacts from source and use LFS/external storage if needed."
+    },
+    {
+      "risk": "Tests become symbolic (pass while behavior drifts) because boundary contracts (UI<->domain, runner<->artifacts) are not enforced.",
+      "likelihood": "medium",
+      "mitigation": "Add boundary-focused integration tests: Arena tick snapshot; WorldSeed event-log invariants; postcard/render artifact invariants."
+    },
+    {
+      "risk": "Operator guidance thrash causes inconsistent agent behavior and repeated rework because authoritative contracts are unclear.",
+      "likelihood": "medium",
+      "mitigation": "Separate stable interface contracts (AGENTS.md) from dated planning notes and link CI checks to contract version/invariant signatures."
+    }
+  ],
+  "next_review_trigger": "Trigger the next review when WorldService refactor + arena determinism golden test land (or if arena_v0/ui_server.py or canvas/src/cli.tsx exceeds +300 LOC net change in a week without new deterministic/integration coverage)."
 }

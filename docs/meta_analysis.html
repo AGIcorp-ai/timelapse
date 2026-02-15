@@ -72,19 +72,37 @@
       .effort-low { background: #d1fae5; color: #065f46; }
       .effort-medium { background: #fef3c7; color: #92400e; }
       .effort-high { background: #fde8e8; color: #b91c1c; }
-      .source-list { font-size: 0.82rem; color: var(--muted); margin-top: 8px; }
-      .source-list li { margin-bottom: 2px; }
-      .blind-spot-list li { margin-bottom: 8px; color: var(--muted); }
-      .protocol-box {
-        background: #162027;
-        color: #e8f1f7;
-        padding: 16px;
-        border-radius: 12px;
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 0.85rem;
-        white-space: pre-wrap;
-        line-height: 1.5;
+      .repo-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        background: #e0e7ff;
+        color: #3730a3;
+        margin-left: 6px;
       }
+      .debt-list, .risk-list { list-style: none; padding: 0; margin: 0; }
+      .debt-item, .risk-item {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: #fff;
+      }
+      .debt-item h3, .risk-item h3 { margin: 0 0 6px; font-size: 0.95rem; }
+      .debt-item p, .risk-item p { margin: 0 0 4px; color: var(--muted); font-size: 0.9rem; }
+      .likelihood-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .likelihood-low { background: #d1fae5; color: #065f46; }
+      .likelihood-medium { background: #fef3c7; color: #92400e; }
+      .likelihood-high { background: #fde8e8; color: #b91c1c; }
       .back-link {
         display: inline-block;
         margin-bottom: 16px;
@@ -100,7 +118,7 @@
       <section class="panel" style="margin-top: 32px;">
         <a class="back-link" href="index.html">&larr; Back to Dashboard</a>
         <h1>Meta-Analysis Verdict</h1>
-        <p style="color: var(--muted);">GPT-5.2 senior-engineer review of all derived reports.</p>
+        <p style="color: var(--muted);">GPT-5.2 senior-engineer review of project engineering output.</p>
 
         <div id="verdict-container">
           <p style="color: var(--muted);">Loading verdict data...</p>
@@ -132,10 +150,10 @@
       }
 
       function render(data) {
-        var v = data.meta_verdict || {};
+        var v = data.verdict || {};
         var actions = data.priority_actions || [];
-        var blindSpots = data.blind_spots || [];
-        var protocol = data.operator_protocol || {};
+        var techDebt = data.tech_debt || [];
+        var risks = data.risks || [];
         var trigger = data.next_review_trigger || "";
 
         var trajectory = v.trajectory || "unknown";
@@ -168,33 +186,37 @@
           html += '<h3>' + esc(a.action || "") + '</h3>';
           html += '<p>' + esc(a.rationale || "") + '</p>';
           html += '<span class="effort-tag effort-' + effort + '">' + esc(a.effort || "") + '</span>';
-          if (a.source_reports && a.source_reports.length) {
-            html += '<ul class="source-list">';
-            a.source_reports.forEach(function (s) {
-              html += '<li>' + esc(s) + '</li>';
-            });
-            html += '</ul>';
+          if (a.repo) {
+            html += '<span class="repo-tag">' + esc(a.repo) + '</span>';
           }
           html += '</li>';
         });
         html += '</ol>';
 
-        // Blind spots
-        html += '<h2>Blind Spots</h2>';
-        html += '<ol class="blind-spot-list">';
-        blindSpots.forEach(function (b) {
-          html += '<li>' + esc(b) + '</li>';
+        // Tech debt
+        html += '<h2>Technical Debt</h2>';
+        html += '<ul class="debt-list">';
+        techDebt.forEach(function (d) {
+          html += '<li class="debt-item">';
+          html += '<h3>' + esc(d.location || "") + '</h3>';
+          html += '<p><strong>Issue:</strong> ' + esc(d.issue || "") + '</p>';
+          html += '<p><strong>Fix:</strong> ' + esc(d.fix || "") + '</p>';
+          html += '</li>';
         });
-        html += '</ol>';
+        html += '</ul>';
 
-        // Operator protocol
-        html += '<h2>Operator Protocol</h2>';
-        html += '<h3 style="font-size:0.95rem;">Weakness</h3>';
-        html += '<p>' + esc(protocol.weakness || "") + '</p>';
-        html += '<h3 style="font-size:0.95rem;">Recommended Template</h3>';
-        html += '<div class="protocol-box">' + esc(protocol.recommended_template || "") + '</div>';
-        html += '<h3 style="font-size:0.95rem;margin-top:12px;">Expected Impact</h3>';
-        html += '<p>' + esc(protocol.expected_impact || "") + '</p>';
+        // Risks
+        html += '<h2>Risk Register</h2>';
+        html += '<ul class="risk-list">';
+        risks.forEach(function (r) {
+          var lk = (r.likelihood || "medium").toLowerCase();
+          html += '<li class="risk-item">';
+          html += '<h3>' + esc(r.risk || "") + '</h3>';
+          html += '<span class="likelihood-tag likelihood-' + lk + '">' + esc(r.likelihood || "") + '</span>';
+          html += '<p style="margin-top:8px;"><strong>Mitigation:</strong> ' + esc(r.mitigation || "") + '</p>';
+          html += '</li>';
+        });
+        html += '</ul>';
 
         // Next review trigger
         html += '<h2>Next Review Trigger</h2>';
